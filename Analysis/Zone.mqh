@@ -38,7 +38,8 @@ void RetireZone(string reason)
    if(!g_replay) CountIn(g_retName, g_retCnt, reason);
    LogEvent("ZONA_ENCERRADA", last, g_zone.poc, 0, StringFormat("Z%d: %s", g_zone.id, reason));
    DrawZone(true);
-   g_state = ST_IDLE;
+   g_s.rejOn = false;
+   g_state   = ST_IDLE;
 }
 
 //+------------------------------------------------------------------+

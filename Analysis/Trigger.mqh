@@ -18,6 +18,7 @@
 //| kind = 0 -> gatilho de PULLBACK (ICS classico)                   |
 //| kind = 1 -> entrada no ROMPIMENTO                                |
 //| kind = 2 -> entrada por ACEITACAO (rompimento se manteve)        |
+//| kind = 3 -> RETESTE_FALHO (vazamento sem fluxo + bounce falho)   |
 //+------------------------------------------------------------------+
 #ifndef __ICSM_TRIGGER_MQH__
 #define __ICSM_TRIGGER_MQH__
@@ -26,19 +27,21 @@ void EvaluateTrigger(const IcsBar &b, int kind)
 {
    bool   isPb   = (kind == 0);
    bool   isHold = (kind == 2);
+   bool   isRej  = (kind == 3);
+   bool   isPbLike = (isPb || isRej);
    int    dir    = g_s.dir;
    double height = g_zone.hi - g_zone.lo;
    double nv     = NormalVol(MinOfDay(b.t));
    double atr5   = ATRArr(g_m5, 14);
    double leg    = MathAbs(g_s.impExt - g_s.origin);
 
-   //--- qualidade do pullback (so faz sentido em kind = 0)
-   double pbVolRatio = isPb ? 99 : 0;
-   if(isPb && g_s.pbBars > 0 && g_s.impBars > 0 && g_s.impVol > 0)
+   //--- qualidade do pullback / bounce (kind 0 e 3)
+   double pbVolRatio = isPbLike ? 99 : 0;
+   if(isPbLike && g_s.pbBars > 0 && g_s.impBars > 0 && g_s.impVol > 0)
       pbVolRatio = (g_s.pbVol / g_s.pbBars) / (g_s.impVol / g_s.impBars);
    double pbContra = 0;
-   if(isPb) pbContra = (g_s.impDelta > 0) ? MathMax(0.0, -g_s.pbDelta) / g_s.impDelta : 99;
-   double retrUsed = isPb ? g_s.retr : 0;
+   if(isPbLike) pbContra = (g_s.impDelta > 0) ? MathMax(0.0, -g_s.pbDelta) / g_s.impDelta : 99;
+   double retrUsed = isPbLike ? g_s.retr : 0;
 
    //--- qualidade da barra de gatilho
    double trigVolRatio = b.vol / nv;
@@ -52,7 +55,9 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    //--- entrada e stop -----------------------------------------------
    double entry   = b.c + dir * InpSlipPts;
    double stopRef = g_s.pbExt;
-   if(isHold)
+   if(isRej)
+      stopRef = (dir > 0) ? g_zone.hi : g_zone.lo;   // borda rompida
+   else if(isHold)
    {
       // extremo contrario do hold (respeito ao nivel), nao o stop do rompimento
       int a = IdxOf(g_s.brkSeq), z = IdxOf(b.seq);
@@ -102,10 +107,10 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    }
    if(target == 0)
    {
-      if(isPb)
+      if(isPbLike)
       {
          target = g_s.pbExt + dir * InpProjMult * leg;
-         tsrc   = "projecao do impulso";
+         tsrc   = isRej ? "projecao do vazamento" : "projecao do impulso";
       }
       else
       {
@@ -132,7 +137,7 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    sc += hasV    ? 10 : 0;
    sc += 10 * Clamp01((g_s.brkVolRatio - 1.0) / MathMax(2 * InpBrkVolMult - 1.0, 0.1));
    sc += 10 * Clamp01(g_s.brkDeltaPct / MathMax(2 * InpBrkDeltaPct, 1.0));
-   if(isPb)
+   if(isPbLike)
    {
       sc += (g_s.retr <= InpPbGoodRetr) ? 10 : 5;
       sc += 10 * Clamp01((1.0 - pbVolRatio) / 0.7);
@@ -154,8 +159,8 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    if(InpBrkMaxVolMult > 0 && g_s.brkVolRatio > InpBrkMaxVolMult) AddReason(why, "rompimento climatico");
    if(!InpBaseline)
    {
-      if(isPb && pbVolRatio > InpPbMaxVolRatio) AddReason(why, "pullback com volume alto");
-      if(isPb && pbContra > InpPbMaxDeltaRatio) AddReason(why, "delta contrario forte no pullback");
+      if(isPbLike && pbVolRatio > InpPbMaxVolRatio) AddReason(why, "pullback com volume alto");
+      if(isPbLike && pbContra > InpPbMaxDeltaRatio) AddReason(why, "delta contrario forte no pullback");
       if(!isHold && trigVolRatio < InpTrigVolMult)     AddReason(why, "gatilho sem volume");
       if(!isHold && trigDeltaPct <= InpTrigMinDeltaPct) AddReason(why, "gatilho sem delta");
       if(InpReqAbsorption && !hasAbs)       AddReason(why, "sem absorcao");
@@ -199,8 +204,8 @@ void EvaluateTrigger(const IcsBar &b, int kind)
 
    //--- registro da operacao simulada ---------------------------------
    string ctxs   = (g_ctx > 0) ? "alta" : ((g_ctx < 0) ? "baixa" : "neutro");
-   string setup  = isPb ? "PULLBACK" : (isHold ? "ACEITACAO" : "ROMPIMENTO");
-   string evName = isPb ? "GATILHO" : (isHold ? "ACEITACAO" : "ENTRADA_ROMPIMENTO");
+   string setup  = isPb ? "PULLBACK" : (isHold ? "ACEITACAO" : (isRej ? "RETESTE_FALHO" : "ROMPIMENTO"));
+   string evName = isPb ? "GATILHO" : (isHold ? "ACEITACAO" : (isRej ? "RETESTE_FALHO" : "ENTRADA_ROMPIMENTO"));
    string info = IntegerToString(g_signals) + ";" + TimeToString(b.t, TIME_DATE) + ";" +
                  TimeToString(b.t + 60, TIME_MINUTES) + ";" + (dir > 0 ? "COMPRA" : "VENDA") + ";" +
                  setup + ";" +
@@ -246,7 +251,7 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    }
    LogEvent(evName, b.t, b.c, dir, status + " score=" + F(sc, 0) + " " + why);
 
-   if(isPb) RetireZone("gatilho avaliado");
+   if(isPb || isRej) RetireZone("gatilho avaliado");
 }
 
 #endif // __ICSM_TRIGGER_MQH__

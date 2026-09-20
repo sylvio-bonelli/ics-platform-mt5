@@ -60,7 +60,7 @@ camada 7  Runtime/     orquestração
 | Arquivo | Responsabilidade |
 |---|---|
 | `Globals.mqh` | todo o estado compartilhado (prefixo `g_`) + `CTrade` |
-| `Prototypes.mqh` | declarações antecipadas dos 8 pontos de acoplamento cruzado |
+| `Prototypes.mqh` | declarações antecipadas dos 10 pontos de acoplamento cruzado |
 | `Utils.mqh` | `DayStart` `MinOfDay` `Clamp01` `RoundDn/Up` `TS` `B` `F` `ParseHM` `AddReason` `IdxOf` `WriteLine` `OrdersAllowed` `ATRArr` |
 | `Stats.mqh` | `CountIn` `CountOf` `CountReasons` — contadores nomeados |
 
@@ -97,6 +97,7 @@ camada 7  Runtime/     orquestração
 | `Absorption.mqh` | detecção de absorção no M1 | mudar a definição operacional de absorção |
 | `Levels.mqh` | níveis candidatos a alvo | acrescentar um tipo novo de obstáculo |
 | `StateMachine.mqh` | rompimento → aceitação → impulso → pullback → gatilho | mudar a sequência de confirmação |
+| **`Reject.mqh`** | vazamento sem fluxo → bounce que não reconquista | mudar o reteste falho (kind=3) |
 | **`Trigger.mqh`** | entrada, stop, alvo, score, filtros, registro | mudar critérios de entrada, pesos do score, regras de risco |
 
 ### Runtime/ — camada 7
@@ -109,13 +110,15 @@ camada 7  Runtime/     orquestração
 
 ---
 
-## 4. Os 8 pontos de acoplamento cruzado
+## 4. Os 10 pontos de acoplamento cruzado
 
 Declarados em `Core/Prototypes.mqh`. São as únicas chamadas que apontam "para
 frente" na ordem de include:
 
 ```
 StateMachine.mqh  →  EvaluateTrigger()    (Analysis/Trigger.mqh)
+StateMachine.mqh  →  UpdateRejectWatch()  (Analysis/Reject.mqh)
+StateMachine.mqh  →  CancelRejectWatch()  (Analysis/Reject.mqh)
 Zone.mqh          →  LogEvent()           (Execution/Logger.mqh)
 Zone.mqh          →  DrawZone()           (UI/Draw.mqh)
 Zone.mqh          →  CountIn()            (Core/Stats.mqh)
@@ -159,9 +162,10 @@ não geram sinais.
                   ZoneDetector achou congestão
       ST_IDLE ──────────────────────────────────► ST_ZONE
          ▲                                            │
-         │                                            │ fechou fora
-         │                                            │ COM volume e delta
-         │                                            ▼
+         │                 ┌── vazamento sem fluxo ──► kind=3 RETESTE_FALHO
+         │                 │
+         │                 │ fechou fora COM volume e delta
+         │                 ▼
          │                                       ST_BREAKOUT
          │                                            │
          │                                            │ InpHoldEntry: X candles
@@ -180,11 +184,13 @@ não geram sinais.
                                               EvaluateTrigger(kind=0)
 ```
 
-Três gatilhos, populações separadas no CSV (`PULLBACK` / `ROMPIMENTO` / `ACEITACAO`):
+Quatro gatilhos, populações separadas no CSV (`PULLBACK` / `ROMPIMENTO` /
+`ACEITACAO` / `RETESTE_FALHO`):
 
 - `kind=1` no candle do rompimento (`InpEntryMode`)
 - `kind=2` após `InpHoldBars` fechamentos sem cruzar `brkLevel` (`InpHoldEntry`)
 - `kind=0` no pullback clássico
+- `kind=3` no reteste falho após vazamento (`InpRejectEntry`)
 
 Transições de volta para `ST_ZONE`: rompimento devolvido dentro do prazo
 (armadilha) ou rompimento falho. Fechar contra `brkLevel` invalida o hold.

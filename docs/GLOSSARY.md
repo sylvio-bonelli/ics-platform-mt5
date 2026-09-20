@@ -66,6 +66,14 @@ Campos `sweptHigh` / `sweptLow`, evento `ARMADILHA`.
 **Rompimento com fluxo** — fecha fora da zona com volume acima do normal **e**
 delta a favor. Sem as duas condições não é rompimento, é vazamento.
 
+**Vazamento** — fechou fora da zona sem volume e delta de rompimento. Evento
+`VAZAMENTO`. Com `InpRejectEntry`, vira watch de reteste falho em vez de
+matar a zona no stale.
+
+**Reteste falho** — depois do vazamento, o preço volta rumo à zona e **não
+fecha dentro**. Romper o micro-extremo desse bounce é o gatilho `kind=3`
+(`RETESTE_FALHO`). Stop na borda rompida. `Analysis/Reject.mqh`.
+
 **Aceitação** — o preço permanece fora da zona por N barras. Distingue rompimento
 real de pavio. `InpAcceptBars`, `InpAcceptMin`.
 

@@ -16,7 +16,7 @@ camada 3   UI/Draw, Execution/Logger
 camada 4   Data/BarBuilder
 camada 5   Execution/   VirtualTrades, RealOrders
 camada 6   Analysis/    Zone, Levels, Absorption, ZoneDetector,
-                        StateMachine, Trigger
+                        StateMachine, Reject, Trigger
 camada 7   UI/Panel, Runtime/Session, BarProcessor, Summary
            ICS_Modular.mq5   OnInit / OnTick / OnDeinit / OnTester
 ```
@@ -25,13 +25,15 @@ camada 7   UI/Panel, Runtime/Session, BarProcessor, Summary
 `Analysis/`. Se uma mudanca exigir quebrar isso, o desenho esta errado — pare e
 discuta com o desenvolvedor antes de codificar.
 
-## Os 8 pontos de acoplamento cruzado
+## Os 10 pontos de acoplamento cruzado
 
 Sao as unicas chamadas que apontam "para frente" na ordem de include. Estao
 declaradas em `Core/Prototypes.mqh`:
 
 ```
 StateMachine.mqh  ->  EvaluateTrigger()      Analysis/Trigger.mqh
+StateMachine.mqh  ->  UpdateRejectWatch()    Analysis/Reject.mqh
+StateMachine.mqh  ->  CancelRejectWatch()    Analysis/Reject.mqh
 Zone.mqh          ->  LogEvent()             Execution/Logger.mqh
 Zone.mqh          ->  DrawZone()             UI/Draw.mqh
 Zone.mqh          ->  CountIn()              Core/Stats.mqh

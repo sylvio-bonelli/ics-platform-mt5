@@ -4,8 +4,8 @@
 //|                                                                  |
 //| Depende de: Core/Utils.mqh, Data/VolumeNormals.mqh,              |
 //|             Analysis/Zone.mqh (RetireZone),                      |
-//|             Execution/Logger.mqh, e do prototipo de              |
-//|             EvaluateTrigger (Core/Prototypes.mqh).               |
+//|             Execution/Logger.mqh, e dos prototipos de            |
+//|             EvaluateTrigger / UpdateRejectWatch / CancelRejectWatch. |
 //|                                                                  |
 //| FLUXO DOS ESTADOS                                                |
 //|                                                                  |
@@ -15,7 +15,8 @@
 //|     - marca TESTE_FUNDO / TESTE_TOPO (toque com volume baixo)    |
 //|     - marca ARMADILHA (saiu fraco e voltou dentro do prazo)      |
 //|     - fechou fora COM volume e delta -> StartBreakout            |
-//|     - fechou fora SEM fluxo por InpZoneStaleBars -> encerra      |
+//|     - fechou fora SEM fluxo: InpRejectEntry -> reteste falho     |
+//|       senao InpZoneStaleBars -> encerra                          |
 //|                                                                  |
 //|   ST_BREAKOUT  BreakoutBar()                                     |
 //|     - voltou para dentro: armadilha ou rompimento falho -> ZONE  |
@@ -174,6 +175,7 @@ void ZoneBar(const IcsBar &b)
    bool inside = (b.c <= g_zone.hi && b.c >= g_zone.lo);
    if(inside)
    {
+      CancelRejectWatch();
       //--- padrao V: saiu sem fluxo e devolveu dentro do prazo de armadilha
       if(g_zone.outUp > 0 && b.seq - g_zone.outUpSeq <= InpTrapBars)
       {
@@ -202,21 +204,23 @@ void ZoneBar(const IcsBar &b)
       return;
    }
 
-   //--- fora sem fluxo: conta e eventualmente encerra a zona
+   //--- fora sem fluxo: reteste falho, ou stale se a regra nova estiver desligada
    if(dir > 0)
    {
       if(g_zone.outUp == 0) g_zone.outUpSeq = b.seq;
       g_zone.outUp++;
       g_zone.outDn = 0;
-      if(g_zone.outUp > InpZoneStaleBars) RetireZone("saida para cima sem fluxo");
    }
    else
    {
       if(g_zone.outDn == 0) g_zone.outDnSeq = b.seq;
       g_zone.outDn++;
       g_zone.outUp = 0;
-      if(g_zone.outDn > InpZoneStaleBars) RetireZone("saida para baixo sem fluxo");
    }
+   if(InpRejectEntry)
+      UpdateRejectWatch(b, dir, volRatio, dpct);
+   else if((dir > 0 ? g_zone.outUp : g_zone.outDn) > InpZoneStaleBars)
+      RetireZone(dir > 0 ? "saida para cima sem fluxo" : "saida para baixo sem fluxo");
 }
 
 //+------------------------------------------------------------------+

@@ -2,9 +2,9 @@
 
 Expert Advisor para MetaTrader 5, mini índice (WIN), gráfico M1.
 
-**v0.18** — entrada por aceitação do rompimento (`InpHoldEntry`). A 0.17 era a modularização:
-79 funções, mesmos parâmetros, mesmo comportamento. Só reorganizada em 24
-arquivos.
+**v0.19** — reteste falho (`InpRejectEntry`): zona vazou sem fluxo, bounce
+não reconquistou, entrada no micro-extremo. População `RETESTE_FALHO` no CSV.
+A 0.18 era a entrada por aceitação (`InpHoldEntry`).
 
 ---
 
@@ -154,7 +154,9 @@ na marcação de área.
 | níveis candidatos a alvo | `Analysis/Levels.mqh` |
 | breakeven / trailing | `Execution/VirtualTrades.mqh` (`TrailStop`) |
 | saída por reversão | `Execution/VirtualTrades.mqh` (`ReversalExitSignal`) |
-| um parâmetro novo | `Config/Inputs.mqh` |
+| um parâmetro novo | `Config/Inputs.mqh` + ficha em `docs/PARAMETROS.md` |
+| o que um parâmetro faz | `docs/PARAMETROS.md` |
+| o que um objeto no gráfico significa | `docs/GRAFICO.md` |
 | um campo novo numa struct | `Config/Defines.mqh` |
 | colunas do CSV | `Execution/Logger.mqh` + `Analysis/Trigger.mqh` |
 

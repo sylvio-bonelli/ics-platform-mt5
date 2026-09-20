@@ -55,6 +55,11 @@ input double InpZoneMinRelVol   = 1.0;       // Volume relativo minimo
 input int    InpZoneStaleBars   = 15;        // Barras M1 fora da zona sem fluxo para encerrar
 input double InpTouchTolPts     = 10;        // Tolerancia de toque nas bordas (pontos)
 
+input group "=== Reteste falho (M1) ==="
+input bool   InpRejectEntry     = true;      // Entrar no reteste que nao reconquista a zona
+input double InpRejectMinRetr   = 0.20;      // Retracao minima do bounce rumo a zona
+input int    InpRejectMaxBars   = 30;        // Prazo do watch apos o vazamento (barras)
+
 input group "=== Absorcao e teste (M1) ==="
 input double InpAbsVolMult      = 2.5;       // Absorcao: volume >= X vezes o normal
 input double InpAbsMaxDispATR   = 0.5;       // Absorcao: deslocamento <= X vezes ATR M1

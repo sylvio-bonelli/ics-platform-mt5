@@ -27,7 +27,7 @@
 //| cima. Ao acrescentar um modulo, respeite a camada dele.          |
 //+------------------------------------------------------------------+
 #property copyright "ICS - Institutional Continuation Setup"
-#property version   "0.18"
+#property version   "0.19"
 #property description "Prova de conceito do ICS no WIN (M1)."
 #property description "Zona institucional -> rompimento com fluxo -> primeiro pullback fraco -> retomada."
 
@@ -63,6 +63,7 @@
 #include "Analysis/Absorption.mqh"
 #include "Analysis/ZoneDetector.mqh"
 #include "Analysis/StateMachine.mqh"
+#include "Analysis/Reject.mqh"
 #include "Analysis/Trigger.mqh"
 
 //--- camada 7: orquestracao -----------------------------------------
@@ -102,6 +103,16 @@ int OnInit()
       Print("Manter: o numero de candles deve ser >= 1");
       return INIT_PARAMETERS_INCORRECT;
    }
+   if(InpRejectMaxBars < 1)
+   {
+      Print("Reteste falho: o prazo em barras deve ser >= 1");
+      return INIT_PARAMETERS_INCORRECT;
+   }
+   if(InpRejectMinRetr <= 0 || InpRejectMinRetr > 1)
+   {
+      Print("Reteste falho: a retracao minima deve estar em (0, 1]");
+      return INIT_PARAMETERS_INCORRECT;
+   }
    if(InpDespWickMult <= 0 || InpFullBodyFrac <= 0 || InpFullBodyFrac > 1)
    {
       Print("Reversao: pavio/corpo deve ser > 0 e a fracao de corpo cheio entre 0 e 1");
@@ -139,7 +150,7 @@ int OnInit()
 
    if(!g_isTester && InpTradeEnabled && !InpLiveOrders)
       Print("ICS Modular ao vivo: ordens BLOQUEADAS (somente alertas). Para operar, ative 'AO VIVO: permitir ordens reais'.");
-   PrintFormat("ICS Modular v0.18 iniciado em %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
+   PrintFormat("ICS Modular v0.19 iniciado em %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
                _Symbol, g_tick, g_pointValue, InpBaseline ? "BASELINE" : "COMPLETO", OrdersAllowed() ? "sim" : "nao");
    return INIT_SUCCEEDED;
 }

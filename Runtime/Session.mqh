@@ -31,6 +31,7 @@ void StartDay(datetime d)
    ProfReset();
    ComputeNormals();
    g_state        = ST_IDLE;
+   g_s.rejOn      = false;
    g_zoneMinStart = 0;
    ArrayResize(g_doneHi, 0);
    ArrayResize(g_doneLo, 0);

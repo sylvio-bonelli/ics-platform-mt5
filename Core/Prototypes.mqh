@@ -43,5 +43,9 @@ void   OnM5Close();
 //--- Analysis/Trigger.mqh
 void   EvaluateTrigger(const IcsBar &b, int kind);
 
+//--- Analysis/Reject.mqh
+void   UpdateRejectWatch(const IcsBar &b, int dir, double volRatio, double dpct);
+void   CancelRejectWatch();
+
 #endif // __ICSM_PROTOTYPES_MQH__
 //+------------------------------------------------------------------+

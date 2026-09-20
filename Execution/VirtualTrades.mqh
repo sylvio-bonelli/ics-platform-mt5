@@ -32,7 +32,7 @@ void CloseVirtual(int k, datetime t, double exitPrice, string reason)
                      F(pts, 0) + ";" + F(r, 2) + ";" + F(g_vt[k].mae, 0) + ";" + F(g_vt[k].mfe, 0) + ";" + F(brl, 2));
 
    int kd = g_vt[k].kind;
-   if(kd < 0 || kd > 2) kd = 0;
+   if(kd < 0 || kd > 3) kd = 0;
    g_kAll[kd]++;
    g_kR[kd]   += r;
    g_kBRL[kd] += brl;

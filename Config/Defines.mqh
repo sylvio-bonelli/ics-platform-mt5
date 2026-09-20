@@ -108,6 +108,7 @@ struct IcsSetup
    int      pbCount;                         // pullbacks ja observados
    double   retr;                            // retracao atual (0-1)
    double   dayExtBefore;                    // extremo do dia antes do rompimento
+   bool     rejOn;                           // watch de reteste falho (vazamento sem fluxo)
 };
 
 //--- evento de absorcao detectado no M1
@@ -124,7 +125,7 @@ struct IcsVTrade
 {
    bool     active;
    bool     taken;                           // passou por todos os filtros
-   int      kind;                            // 0 = pullback, 1 = rompimento, 2 = aceitacao
+   int      kind;                            // 0 = pullback, 1 = rompimento, 2 = aceitacao, 3 = reteste falho
    int      dir;
    long     startSeq;
    int      bars;

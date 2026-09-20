@@ -67,11 +67,14 @@ compilador MQL5 fora do MetaEditor.
 | quando a zona morre | `Analysis/Zone.mqh` |
 | o que conta como absorção | `Analysis/Absorption.mqh` |
 | a sequência de confirmação | `Analysis/StateMachine.mqh` |
+| reteste falho / vazamento sem fluxo | `Analysis/Reject.mqh` |
 | critérios de entrada, score, risco | `Analysis/Trigger.mqh` |
 | níveis candidatos a alvo | `Analysis/Levels.mqh` |
 | breakeven / trailing | `Execution/VirtualTrades.mqh` (`TrailStop`) |
 | saída por reversão | `Execution/VirtualTrades.mqh` (`ReversalExitSignal`) |
-| um parâmetro novo | `Config/Inputs.mqh` |
+| um parâmetro novo | `Config/Inputs.mqh` **e** `docs/PARAMETROS.md` |
+| o que um parâmetro faz / analisar filtro | `docs/PARAMETROS.md` (obrigatório) |
+| o que um objeto no gráfico significa | `docs/GRAFICO.md` |
 | um campo novo em struct | `Config/Defines.mqh` |
 | colunas do CSV | `Execution/Logger.mqh` **e** `Analysis/Trigger.mqh` **e** `Execution/VirtualTrades.mqh` |
 
@@ -96,7 +99,8 @@ revisão é visual — diffs limpos importam mais aqui do que no normal.
 - Responda em **português do Brasil**
 - O desenvolvedor é engenheiro sênior: vá direto ao ponto, sem explicar o básico
 - Ao analisar resultados de backtest, separe **fato observável** de **hipótese**
-  e apresente o argumento contrário
+  e apresente o argumento contrário. Consulte `docs/PARAMETROS.md` (efeito de
+  cada input) e `docs/GRAFICO.md` (marcadores) — não chute significado.
 - "Não operar" é uma decisão válida. O EA rejeitar muitos sinais não é bug
 
 ---
@@ -109,4 +113,6 @@ Percorra `.cursor/rules/080-checklist.mdc`. O resumo:
 - ASCII puro nos `.mqh` / `.mq5`
 - funil do Testador ainda faz sentido
 - `ARCHITECTURE.md` atualizado se a estrutura mudou
+- `docs/PARAMETROS.md` / `docs/GRAFICO.md` atualizados se a mudança tocou
+  input, filtro, motivo CSV ou desenho
 - nenhum arquivo irrelevante no diff

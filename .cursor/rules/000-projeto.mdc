@@ -45,13 +45,33 @@ Data/               VolumeNormals, VolumeProfile, Flow, BarBuilder
 UI/                 Draw, Panel
 Execution/          Logger, VirtualTrades, RealOrders
 Analysis/           Zone, ZoneDetector, Absorption, Levels,
-                    StateMachine, Trigger
+                    StateMachine, Reject, Trigger
 Runtime/            Session, BarProcessor, Summary
 ```
 
 `ARCHITECTURE.md` na raiz tem o mapa completo: responsabilidade de cada modulo,
-os 8 pontos de acoplamento cruzado, a ordem de execucao por barra e o diagrama da
+os 10 pontos de acoplamento cruzado, a ordem de execucao por barra e o diagrama da
 maquina de estados. **Leia-o antes de qualquer mudanca estrutural.**
+
+## Documentacao de consulta (obrigatoria)
+
+Antes de propor mudanca de parametro, filtro, alvo, gestao ou de interpretar
+backtest / funil / CSV / grafico, leia:
+
+- `docs/PARAMETROS.md` — o que cada input faz, motivo no CSV, efeito no funil
+- `docs/GRAFICO.md` — o que cada objeto no grafico significa
+- `docs/GLOSSARY.md` — vocabulario do setup (complementa a regra 070)
+
+Nao chute o significado de um `Inp*` nem de um marcador. Se o codigo e o `.md`
+divergirem, o codigo vence — e a ficha tem que ser corrigida na mesma mudanca.
+
+Esses arquivos **sempre acompanham o codigo**. Criou, renomeou, mudou default
+ou comportamento de um input? Atualize `PARAMETROS.md`. Mudou simbolo, cor ou
+evento desenhado? Atualize `GRAFICO.md`. Entregar codigo sem a ficha
+correspondente e trabalho incompleto.
+
+Ao analisar resultados, use as fichas para separar fato (o que o parametro faz
+no codigo) de hipotese de calibracao. Nao invente valor recomendado.
 
 ## Idioma
 
