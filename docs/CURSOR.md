@@ -117,7 +117,7 @@ conflito, salve no Cursor primeiro e escolha "recarregar" no MetaEditor.
 
 ## Git
 
-Repositório: [bonellirj/ics-platform-mt5](https://github.com/bonellirj/ics-platform-mt5.git).
+Repositório: [sylvio-bonelli/ics-platform-mt5](https://github.com/sylvio-bonelli/ics-platform-mt5.git).
 O `git init` fica **só** em `MQL5/Experts/ICS_Modular` — nunca em `Terminal\` ou
 `MQL5\`, que são o data dir do MetaTrader.
 
