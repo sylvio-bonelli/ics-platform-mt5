@@ -2,7 +2,7 @@
 
 Expert Advisor para MetaTrader 5, mini índice (WIN), gráfico M1.
 
-**v0.17** — versão modularizada. Lógica idêntica ao arquivo único de 1969 linhas:
+**v0.18** — entrada por aceitação do rompimento (`InpHoldEntry`). A 0.17 era a modularização:
 79 funções, mesmos parâmetros, mesmo comportamento. Só reorganizada em 24
 arquivos.
 

@@ -27,7 +27,7 @@
 //| cima. Ao acrescentar um modulo, respeite a camada dele.          |
 //+------------------------------------------------------------------+
 #property copyright "ICS - Institutional Continuation Setup"
-#property version   "0.17"
+#property version   "0.18"
 #property description "Prova de conceito do ICS no WIN (M1)."
 #property description "Zona institucional -> rompimento com fluxo -> primeiro pullback fraco -> retomada."
 
@@ -139,7 +139,7 @@ int OnInit()
 
    if(!g_isTester && InpTradeEnabled && !InpLiveOrders)
       Print("ICS Modular ao vivo: ordens BLOQUEADAS (somente alertas). Para operar, ative 'AO VIVO: permitir ordens reais'.");
-   PrintFormat("ICS Modular v0.17 iniciado em %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
+   PrintFormat("ICS Modular v0.18 iniciado em %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
                _Symbol, g_tick, g_pointValue, InpBaseline ? "BASELINE" : "COMPLETO", OrdersAllowed() ? "sim" : "nao");
    return INIT_SUCCEEDED;
 }
