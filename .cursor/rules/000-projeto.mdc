@@ -1,0 +1,60 @@
+---
+description: Contexto geral do projeto ICS_Modular — o que e, para que serve e como esta organizado
+alwaysApply: true
+---
+
+# ICS_Modular — contexto do projeto
+
+Expert Advisor para **MetaTrader 5**, escrito em **MQL5**. Opera mini indice
+Bovespa (WIN) em grafico M1, com metodologia de volume institucional e Market
+Profile.
+
+Nome do setup: **ICS — Institutional Continuation Setup**.
+
+## O que o EA faz
+
+Procura uma sequencia especifica de eventos e so entra quando todos ocorrem:
+
+```
+zona institucional (M5)          congestao com volume acima do normal
+   -> rompimento com fluxo (M1)  volume + delta a favor
+   -> aceitacao e continuidade    fecha fora e avanca
+   -> primeiro pullback fraco     retracao com volume baixo
+   -> retomada do fluxo           rompe o micro-extremo -> ENTRADA
+```
+
+## Principio que governa o codigo
+
+**Todo gatilho avaliado vira uma operacao simulada — executado OU rejeitado.**
+As rejeitadas continuam sendo acompanhadas ate o desfecho e vao para o CSV.
+
+Isso existe para responder a pergunta central do estudo: *este filtro esta
+protegendo ou custando dinheiro?* Se a populacao de REJEITADOS tiver R medio
+igual ou melhor que a de EXECUTADOS, o filtro esta errado.
+
+**Nunca proponha um `return` antecipado em `EvaluateTrigger` quando o gatilho
+for rejeitado.** Isso quebraria o proposito do projeto.
+
+## Estrutura
+
+```
+ICS_Modular.mq5          so #property, ordem de include e eventos do MT5
+Config/             Defines (structs/enums), Inputs (parametros)
+Core/               Globals, Prototypes, Utils, Stats
+Data/               VolumeNormals, VolumeProfile, Flow, BarBuilder
+UI/                 Draw, Panel
+Execution/          Logger, VirtualTrades, RealOrders
+Analysis/           Zone, ZoneDetector, Absorption, Levels,
+                    StateMachine, Trigger
+Runtime/            Session, BarProcessor, Summary
+```
+
+`ARCHITECTURE.md` na raiz tem o mapa completo: responsabilidade de cada modulo,
+os 8 pontos de acoplamento cruzado, a ordem de execucao por barra e o diagrama da
+maquina de estados. **Leia-o antes de qualquer mudanca estrutural.**
+
+## Idioma
+
+- Codigo, comentarios e identificadores: **portugues sem acentuacao**
+- Conversa com o desenvolvedor: **portugues do Brasil**, pode acentuar
+- Arquivos `.md`: portugues com acentuacao normal

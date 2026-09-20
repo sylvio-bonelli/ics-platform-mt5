@@ -1,0 +1,41 @@
+# Arquivos que o Cursor nao deve ler nem indexar.
+# Binarios compilados, saidas de teste e dados de mercado nao acrescentam
+# contexto e so consomem a janela do modelo.
+
+# --- compilados do MetaEditor ---
+*.ex5
+*.ex4
+
+# --- saidas do EA ---
+*.csv
+*.log
+*.htm
+*.html
+Files/
+Logs/
+Tester/
+Reports/
+
+# --- dados de mercado ---
+*.hst
+*.hcc
+*.fxt
+*.tkc
+*.dat
+
+# --- configuracoes locais e presets ---
+*.set
+*.ini
+*.chr
+*.tpl
+
+# --- sistema operacional ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- backups ---
+*.bak
+*.old
+*.orig
+_old/

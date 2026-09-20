@@ -1,0 +1,96 @@
+---
+description: Regras para os modulos de analise — zona, absorcao, maquina de estados e gatilho
+globs: ["Analysis/**"]
+alwaysApply: false
+---
+
+# Analysis/ — o nucleo do setup
+
+Esta e a camada que o desenvolvedor mais evolui. Mudancas aqui alteram
+diretamente os resultados do backtest.
+
+## Quem faz o que
+
+| Arquivo | Responsabilidade | Mexer quando |
+|---|---|---|
+| `ZoneDetector.mqh` | **marcacao da area** no M5 | mudar como a zona e identificada |
+| `Zone.mqh` | ciclo de vida da zona, POC proprio, consulta de absorcao | mudar quando a zona morre |
+| `Absorption.mqh` | deteccao de absorcao no M1 | mudar a definicao de absorcao |
+| `Levels.mqh` | niveis candidatos a alvo | acrescentar tipo de obstaculo |
+| `StateMachine.mqh` | rompimento -> impulso -> pullback -> gatilho | mudar a sequencia de confirmacao |
+| `Trigger.mqh` | entrada, stop, alvo, score, filtros, registro | mudar criterios de entrada ou risco |
+
+## ZoneDetector: os tres criterios
+
+Testa janelas do **maior para o menor** (`InpZoneMaxBars` -> `InpZoneMinBars`) e
+fica com a **primeira** que passar. Testar do maior para o menor faz a zona
+abranger o maximo de congestao.
+
+1. Amplitude `<= InpZoneMaxRangeATR * ATR(M5)` — e estreita
+2. Eficiencia direcional `<= InpZoneMaxER` — nao anda
+   `ER = |fechamento - abertura| / caminho percorrido`
+3. Volume relativo `>= InpZoneMinRelVol` — tem gente
+   (ignorado quando `InpBaseline = true`)
+
+Ao acrescentar um criterio, ele entra **dentro do laco de janelas**, como
+`continue`, e precisa respeitar o modo BASELINE.
+
+## StateMachine: as transicoes
+
+```
+ST_IDLE  --(ZoneDetector achou congestao)-->  ST_ZONE
+ST_ZONE  --(fechou fora COM volume e delta)-->  ST_BREAKOUT
+ST_BREAKOUT  --(avancou InpContMult x altura)-->  ST_IMPULSE
+ST_IMPULSE  --(pullback + retomada do micro-extremo)-->  EvaluateTrigger()
+
+qualquer estado  --RetireZone()-->  ST_IDLE
+ST_BREAKOUT  --(devolveu o rompimento)-->  ST_ZONE
+```
+
+Todo caminho que sai de `ST_ZONE`, `ST_BREAKOUT` ou `ST_IMPULSE` sem gatilho
+**tem que** chamar `RetireZone(motivo)` com um motivo descritivo — o motivo vira
+linha do funil em `PrintFunnel()` e e a principal ferramenta de diagnostico.
+Nunca atribua `g_state = ST_IDLE` diretamente.
+
+## Trigger: a regra que nao pode ser quebrada
+
+`EvaluateTrigger` **nunca aborta**. Mesmo rejeitando, ela:
+
+1. calcula entrada, stop, alvo e score
+2. acumula os motivos em `why` via `AddReason()`
+3. monta a `IcsVTrade` e registra em `g_vt[]`
+4. grava a linha no CSV
+
+Um `return` antecipado no caminho de rejeicao destroi a comparacao
+EXECUTADOS x REJEITADOS, que e o proposito do projeto inteiro.
+
+## Ao acrescentar um filtro
+
+```cpp
+if(<condicao de rejeicao>) AddReason(why, "motivo curto e legivel");
+```
+
+- Coloque dentro do bloco `if(!InpBaseline)` se o filtro for de volume ou fluxo
+- O texto do motivo aparece no CSV e no resumo — mantenha curto e sem acento
+- Detalhe entre parenteses e descartado na contagem: `"RR insuficiente (POC anterior)"`
+  conta como `RR insuficiente`
+- Acrescente o parametro correspondente em `Config/Inputs.mqh`
+
+## Ao mexer no score
+
+O score vai de 0 a 100 e hoje soma:
+
+```
+contexto a favor        15   (neutro 7, contra 0)
+absorcao                10
+teste de extremidade    10
+padrao V (armadilha)    10
+volume do rompimento    10   escalado
+delta do rompimento     10   escalado
+qualidade do pullback   20   (retracao 10 + volume 10) ou 10 fixo no rompimento
+gatilho com fluxo        5
+R:R                     10   escalado
+```
+
+Se mudar pesos, **mantenha o total em 100** — `InpMinScore` e interpretado como
+percentual pelo desenvolvedor.

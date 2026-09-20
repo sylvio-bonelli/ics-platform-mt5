@@ -1,0 +1,95 @@
+---
+description: Convencoes de escrita do codigo MQL5 deste projeto — nomes, formatacao, comentarios
+globs: ["**/*.mq5", "**/*.mqh"]
+alwaysApply: false
+---
+
+# Estilo do codigo
+
+## ASCII obrigatorio
+
+**Nenhum caractere acentuado em `.mq5` ou `.mqh`.** O MetaEditor grava em ANSI e
+acento vira lixo. Escreva `rompimento`, `absorcao`, `retracao`, `funcao`,
+`horario`, `criterio` — sem acento, sem cedilha.
+
+Arquivos `.md` podem ter acentuacao normal.
+
+Verificacao:
+```bash
+grep -rlP '[^\x00-\x7F]' --include='*.mqh' --include='*.mq5' .
+```
+
+## Prefixos
+
+| Prefixo | Uso | Exemplo |
+|---|---|---|
+| `g_` | toda variavel global | `g_zone`, `g_tradesToday` |
+| `Inp` | todo parametro de entrada | `InpBrkVolMult` |
+| `ST_` | estado da maquina | `ST_IMPULSE` |
+| `ICSM_` | objeto grafico | `ICSM_Z3`, `ICSM_M17` |
+| `Ics` | struct | `IcsBar`, `IcsZone` |
+| `__ICSM_..._MQH__` | include guard | `__ICSM_TRIGGER_MQH__` |
+
+Funcoes em `PascalCase`, locais em `camelCase` curto.
+
+## Formatacao
+
+- Indentacao: **3 espacos**, nunca tab
+- Chave em linha propria (estilo Allman):
+  ```cpp
+  if(volOk && deltaOk)
+  {
+     StartBreakout(b, dir, volRatio, dpct);
+     return;
+  }
+  ```
+- Declaracoes relacionadas alinhadas em coluna:
+  ```cpp
+  bool   isPb   = (kind == 0);
+  int    dir    = g_s.dir;
+  double height = g_zone.hi - g_zone.lo;
+  ```
+- `if` de uma linha sem chaves e aceito quando cabe na linha
+- Separador de secao dentro do modulo:
+  ```cpp
+  //+------------------------------------------------------------------+
+  //| Descricao da secao                                               |
+  //+------------------------------------------------------------------+
+  ```
+
+## Cabecalho de modulo
+
+Todo `.mqh` comeca com um bloco que declara **de que ele depende** e explica a
+ideia central. Siga o padrao dos existentes — nao crie um `.mqh` sem cabecalho.
+
+```cpp
+//+------------------------------------------------------------------+
+//| Pasta/Arquivo.mqh                                                |
+//| Uma linha dizendo a responsabilidade.                            |
+//|                                                                  |
+//| Depende de: <lista dos modulos>.                                 |
+//|                                                                  |
+//| <paragrafo explicando a ideia, quando houver algo nao obvio>     |
+//+------------------------------------------------------------------+
+```
+
+## Comentarios
+
+- Explique **por que**, nao **o que**. `// conservador: stop antes do alvo` e
+  util; `// incrementa o contador` nao e.
+- Comentario de fim de linha alinhado, quando marca uma decisao:
+  ```cpp
+  if(closedM5 > 0) OnM5Close();
+  if(!live) return;                 // carga de historico: nao gera sinais
+  ```
+- Nao remova comentarios existentes ao editar codigo em volta deles.
+
+## Ao editar
+
+- **Nao reformate codigo que voce nao precisou tocar.** Diffs limpos importam
+  mais aqui do que em um projeto com testes automatizados, porque a validacao e
+  manual.
+- Nao renomeie identificadores existentes sem pedido.
+- Nao converta funcoes livres em classes. O projeto e deliberadamente
+  procedural.
+- Nao introduza `#define` novo para valor que deveria ser um `input`.

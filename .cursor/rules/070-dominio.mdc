@@ -1,0 +1,74 @@
+---
+description: Vocabulario de analise de volume institucional e Market Profile aplicado ao WIN. Consulte ao interpretar ou nomear conceitos do setup (absorcao, zona, POC, delta, padrao V, spike, pullback, contexto).
+alwaysApply: false
+---
+
+# Dominio: volume institucional no WIN
+
+Vocabulario que o desenvolvedor usa. Nomeie funcoes e variaveis com estes termos,
+nao com traducoes do ingles.
+
+## Instrumento
+
+**WIN** — mini contrato futuro do Ibovespa, B3. Tick de 5 pontos. Valor do ponto
+em torno de R$ 0,20 por contrato (o codigo le do simbolo, nao chuta).
+
+Contratos: `WINV26`, `WINZ26` (mes + ano). **`WIN$` e o continuo e nao serve** —
+nao tem lado agressor nem bid/ask, o delta fica invalido. `WIN_ICS` e um simbolo
+arquivado localmente pelo desenvolvedor com ticks reais preservados.
+
+## Ciclo de mercado
+
+O setup persegue as fases iniciais, onde a assimetria risco-retorno e maior:
+
+```
+1. Absorcao      volume alto, preco parado — alguem esta segurando
+2. Acumulacao / Distribuicao
+3. Teste de oferta / demanda
+4. Spike         deslocamento rapido
+5. Spike channel movimento ja maduro — tarde demais para entrar
+```
+
+`InpMaxPullbacks = 1` existe exatamente para nao entrar em spike channel: depois
+do primeiro pullback, a zona e encerrada com o motivo
+`"alem do primeiro pullback (spike channel)"`.
+
+## Termos e o codigo
+
+| Termo | Significado | Onde vive |
+|---|---|---|
+| **Zona institucional** | congestao com volume acima do normal — o acampamento dos grandes players | `IcsZone`, `Analysis/ZoneDetector.mqh` |
+| **Absorcao** | volume muito acima do normal com deslocamento minimo | `Analysis/Absorption.mqh` |
+| **Teste de demanda** | toca o fundo da zona com volume **baixo** e volta — nao ha vendedor | `ZoneBar`, evento `TESTE_FUNDO` |
+| **Teste de oferta** | o espelho, no topo | evento `TESTE_TOPO` |
+| **Padrao V / armadilha** | saida fraca da zona rapidamente devolvida — pegou os atrasados | `sweptHigh`, `sweptLow`, evento `ARMADILHA` |
+| **Rompimento com fluxo** | fecha fora da zona com volume E delta a favor | `StartBreakout` |
+| **Aceitacao** | o preco fica fora da zona por N barras | `InpAcceptBars`, `InpAcceptMin` |
+| **Deslocamento** | avanco de pelo menos 1x a altura da zona | evento `DESLOCAMENTO` |
+| **Pullback fraco** | retracao com volume baixo e delta contrario fraco | `IcsSetup.pb*` |
+| **Micro-extremo** | extremo da perna de pullback; romper isso e o gatilho | `MicroExtreme()` |
+| **Delta** | volume agressor comprador menos vendedor | `Data/Flow.mqh` |
+| **POC** | Point of Control — nivel de maior volume negociado | `ProfValueArea`, `ZonePoc` |
+| **VAH / VAL** | topo e fundo da Value Area de 70% | `ProfValueArea` |
+| **HVN** | High Volume Node — pico local do histograma; vira obstaculo | `ProfHVN` |
+| **VWAP** | preco medio ponderado por volume; define o contexto do dia | `IcsBar.dvwap`, `UpdateContext` |
+| **ER** | eficiencia direcional: `\|fecha - abre\| / caminho`. Baixa = congestao | `IcsZone.er` |
+| **Volume normal** | volume tipico daquele minuto do dia, media de N dias | `Data/VolumeNormals.mqh` |
+
+## Volume normal, nao media movel
+
+O volume do WIN nao e comparavel entre horarios — abertura e fechamento sao
+naturalmente muito mais volumosos. Por isso o projeto guarda o perfil
+minuto-a-minuto dos ultimos N dias e compara cada barra com o que e normal
+**naquele minuto** (janela de mais ou menos 2 minutos para suavizar).
+
+**Nunca substitua isso por media movel simples.** A media movel so existe como
+fallback enquanto nao ha `InpVolMinDays` dias de historico.
+
+## Postura
+
+O desenvolvedor trabalha com a premissa de que **nao operar e uma decisao
+valida**. O EA rejeitar muitos sinais nao e bug.
+
+Ao analisar resultados, distinga **fato observavel** de **hipotese**, e sempre
+apresente o argumento contrario. Nunca force uma justificativa para operar.

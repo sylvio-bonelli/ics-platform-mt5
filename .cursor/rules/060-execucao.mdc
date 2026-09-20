@@ -1,0 +1,88 @@
+---
+description: Regras para Execution/ — ordens reais, operacoes simuladas e o CSV
+globs: ["Execution/**"]
+alwaysApply: false
+---
+
+# Execution/ — dinheiro de verdade
+
+Esta camada envia ordens. Cuidado proporcional.
+
+## As duas travas de seguranca
+
+```cpp
+bool OrdersAllowed() { return InpTradeEnabled && (g_isTester || InpLiveOrders); }
+```
+
+Ao vivo, **as duas** precisam estar ligadas. `InpLiveOrders = false` faz o EA
+rodar normalmente, gravar CSV e emitir alertas, sem mandar nenhuma ordem.
+
+**Nunca proponha remover, simplificar ou contornar essa checagem.** Nao sugira
+um "modo rapido" que pule a trava.
+
+Existe uma terceira variavel: `g_replay`, verdadeira durante o reprocessamento de
+historico em `OnInit`. Nenhuma ordem sai com `g_replay = true`. Todo codigo novo
+que envie ordem ou altere posicao precisa respeitar isso.
+
+## Simetria virtual x real
+
+`TrailStop()` e usada **pelas duas** gestoes — operacoes virtuais e posicao real.
+Por isso ela nao toca em nenhum estado global: recebe tudo por parametro e
+devolve o novo stop.
+
+Se voce mudar a logica de breakeven ou trailing, mude **so em `TrailStop`**. Se
+mudar so num lado, o estudo deixa de descrever o que o EA realmente faz ao vivo
+e o backtest vira ficcao.
+
+O mesmo vale para stop de tempo e zeragem de fim de dia: existem em
+`UpdateVirtualTrades` e em `ManageRealPosition`. Mudou um, mude o outro.
+
+## Premissa conservadora
+
+Quando a barra M1 toca stop **e** alvo no mesmo minuto, o codigo assume **STOP**:
+
+```cpp
+if(hitStop)        { ... }     // testado primeiro, de proposito
+else if(hitTgt)    { ... }
+```
+
+Nao "corrija" isso. Sem dados intrabar nao da para saber a ordem, e a premissa
+pessimista evita backtest otimista demais.
+
+## O CSV de sinais
+
+Cabecalho definido em `OpenFiles()` (`Execution/Logger.mqh`), 37 colunas. A linha
+e montada em **duas partes**:
+
+1. `Analysis/Trigger.mqh` monta `info` — as 31 colunas ate `rr_liquido`
+2. `Execution/VirtualTrades.mqh` (`CloseVirtual`) concatena as 7 colunas de
+   desfecho: `saida_hora` ... `resultado_brl`
+
+**Acrescentar uma coluna exige tocar nos dois lugares e no cabecalho.** Se
+esquecer um, o CSV desalinha em silencio — nada quebra, os dados e que ficam
+errados. Confira os tres pontos na mesma mudanca.
+
+Separador: `;`. Decimal: virgula quando `InpCommaDecimal = true` — sempre passe
+numeros pela funcao `F(valor, casas)` de `Core/Utils.mqh`, nunca por
+`DoubleToString` direto.
+
+Arquivos vao para a **pasta comum** (`FILE_COMMON`), o que permite abrir no Excel
+com o teste rodando. Nao mude para a pasta local.
+
+## Eventos
+
+`LogEvent(tipo, t, preco, dir, info)` faz tres coisas de uma vez: grava no CSV de
+eventos, incrementa o contador do funil e desenha o marcador no grafico.
+
+Tipos existentes — **reutilize antes de inventar**, porque `PrintFunnel()` os le
+por nome literal:
+
+```
+ZONA_CRIADA  ZONA_AJUSTADA  ZONA_ENCERRADA
+ABSORCAO  TESTE_FUNDO  TESTE_TOPO  ARMADILHA
+ROMPIMENTO  ROMPIMENTO_FALHOU  ENTRADA_ROMPIMENTO
+DESLOCAMENTO  PULLBACK_SEM_GATILHO  GATILHO
+```
+
+Criou um tipo novo? Acrescente a linha correspondente em `PrintFunnel()`
+(`Runtime/Summary.mqh`), senao ele nao aparece no diagnostico.

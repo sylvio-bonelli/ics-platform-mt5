@@ -1,0 +1,12 @@
+# Fica FORA do indice semantico, mas continua acessivel se voce citar
+# explicitamente com @arquivo.
+#
+# Diferenca para o .cursorignore: la o Cursor nao le de jeito nenhum.
+# Aqui ele so nao indexa automaticamente.
+
+# Documentacao longa: util quando citada, ruido quando indexada inteira
+docs/GLOSSARY.md
+
+# Se voce guardar versoes antigas para consulta, coloque aqui
+_old/
+_arquivo/

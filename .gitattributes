@@ -1,0 +1,19 @@
+# Working tree CRLF (MetaEditor / .editorconfig). Repo stores LF.
+# Sem working-tree-encoding: o codigo .mq5/.mqh e ASCII; conversao
+# latin1<->UTF-8 no checkout e o jeito classico de brigar com o editor.
+
+* text=auto eol=crlf
+
+*.mq5 text eol=crlf linguist-language=MQL5
+*.mqh text eol=crlf linguist-language=MQL5
+
+*.md  text eol=crlf
+*.mdc text eol=crlf
+
+# Se alguem force-add, o Git nao tenta diff de binario.
+*.ex5 binary
+*.ex4 binary
+*.hst binary
+*.hcc binary
+*.fxt binary
+*.tkc binary

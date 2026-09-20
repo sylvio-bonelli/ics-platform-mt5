@@ -1,0 +1,82 @@
+---
+description: Arquitetura em camadas, ordem de include e os pontos de acoplamento cruzado
+alwaysApply: true
+---
+
+# Camadas e ordem de include
+
+A ordem em `ICS_Modular.mq5` **nao e arbitraria**. Ela segue as camadas, de baixo para
+cima. Um modulo so pode usar o que vem **antes** dele.
+
+```
+camada 0   Config/      Defines, Inputs            nao depende de nada
+camada 1   Core/        Globals, Prototypes, Utils, Stats
+camada 2   Data/        VolumeNormals, VolumeProfile, Flow
+camada 3   UI/Draw, Execution/Logger
+camada 4   Data/BarBuilder
+camada 5   Execution/   VirtualTrades, RealOrders
+camada 6   Analysis/    Zone, Levels, Absorption, ZoneDetector,
+                        StateMachine, Trigger
+camada 7   UI/Panel, Runtime/Session, BarProcessor, Summary
+           ICS_Modular.mq5   OnInit / OnTick / OnDeinit / OnTester
+```
+
+**Regra dura:** `Analysis/` pode usar `Core/`. `Core/` nunca pode usar
+`Analysis/`. Se uma mudanca exigir quebrar isso, o desenho esta errado — pare e
+discuta com o desenvolvedor antes de codificar.
+
+## Os 8 pontos de acoplamento cruzado
+
+Sao as unicas chamadas que apontam "para frente" na ordem de include. Estao
+declaradas em `Core/Prototypes.mqh`:
+
+```
+StateMachine.mqh  ->  EvaluateTrigger()      Analysis/Trigger.mqh
+Zone.mqh          ->  LogEvent()             Execution/Logger.mqh
+Zone.mqh          ->  DrawZone()             UI/Draw.mqh
+Zone.mqh          ->  CountIn()              Core/Stats.mqh
+Session.mqh       ->  CloseAllVirtual()      Execution/VirtualTrades.mqh
+Session.mqh       ->  CloseRealPosition()    Execution/RealOrders.mqh
+Session.mqh       ->  RetireZone()           Analysis/Zone.mqh
+BarProcessor.mqh  ->  OnM5Close()            Analysis/ZoneDetector.mqh
+```
+
+**Criou uma chamada nova entre modulos que aponta para frente? Acrescente o
+prototipo em `Core/Prototypes.mqh` na mesma mudanca.**
+
+## Ao criar um modulo novo
+
+1. Escolha a camada pela dependencia mais alta que ele precisa
+2. Crie o include guard `__ICSM_<NOME>_MQH__`
+3. Escreva o cabecalho declarando **de que ele depende** (padrao dos existentes)
+4. Acrescente o `#include` em `ICS_Modular.mq5` na posicao da camada correta
+5. Atualize a tabela de modulos em `ARCHITECTURE.md`
+
+## Ordem de execucao por barra M1
+
+Definida em `ProcessBar()` (`Runtime/BarProcessor.mqh`). **Mudar essa ordem muda
+o comportamento do EA** — nunca reordene sem pedido explicito:
+
+```
+1. maxima/minima/VWAP do dia + volume por minuto
+2. numera a barra (seq) e guarda em g_m1
+3. agrega no M5
+   -- daqui em diante, so quando live = true --
+4. UpdateContext         contexto pela VWAP
+5. UpdateVirtualTrades   avanca as operacoes simuladas
+6. ManageRealPosition    breakeven / trailing / stop de tempo
+7. DetectAbsorption      registra absorcao
+8. RunStateMachine       ZoneBar / BreakoutBar / ImpulseBar
+9. OnM5Close             redetecta a zona (so se um M5 fechou)
+10. UpdatePanel
+```
+
+`live = false` durante `LoadHistory()`: as barras alimentam os acumuladores mas
+nao geram sinais.
+
+## Tamanho dos modulos
+
+Meta: **150 a 300 linhas**. `Analysis/StateMachine.mqh` esta em 335 e e a
+excecao conhecida — o corte planejado esta na secao 10 do `ARCHITECTURE.md`.
+Se um modulo passar de 300, sugira a quebra ao desenvolvedor em vez de deixar
+crescer.

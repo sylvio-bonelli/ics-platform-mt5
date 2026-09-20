@@ -1,0 +1,92 @@
+---
+description: Regras da linguagem MQL5 — o que existe, o que nao existe e os erros que um modelo treinado em C++ costuma cometer
+globs: ["**/*.mq5", "**/*.mqh"]
+alwaysApply: false
+---
+
+# MQL5 nao e C++
+
+MQL5 tem sintaxe parecida com C++, e essa semelhanca e a maior fonte de erro.
+Antes de sugerir qualquer construcao, confira nesta lista.
+
+## Compilacao: nao existe linker
+
+`#include` e **inclusao textual do pre-processador**. Todos os arquivos viram
+**uma unica unidade de compilacao** e um unico `.ex5`.
+
+| Consequencia | O que isso significa na pratica |
+|---|---|
+| Nao existe compilacao separada | Nao proponha "compilar so este modulo" |
+| Nao existe `.o` / `.obj` / `.lib` | Nao proponha makefile, CMake ou build system |
+| Ordem de include importa | Variavel global precisa existir antes do uso |
+| Dependencia circular nao compila | A hierarquia e estritamente em camadas |
+| Include guard e obrigatorio | Todo `.mqh` tem `#ifndef __ICSM_<NOME>_MQH__` |
+
+Funcoes globais **podem** ser chamadas antes de definidas (o compilador faz duas
+passagens). Variaveis globais **nao podem**.
+
+## O que NAO existe em MQL5
+
+Nunca sugira:
+
+- `namespace`
+- STL: `std::vector`, `std::map`, `std::string`, `<algorithm>`, iteradores
+- `auto`, `nullptr`, `constexpr`, `using`, lambdas, `std::function`
+- Templates com especializacao parcial
+- `try` / `catch` / `throw` — **nao ha excecoes**
+- Herança multipla
+- Ponteiros para funcao no estilo C (ha um mecanismo proprio, raramente usado)
+- `printf`, `cout`, `malloc`, `free`
+- Threads, async, `std::chrono`
+- Bibliotecas externas via `-l` ou pacotes
+
+## O que usar no lugar
+
+| Em vez de | Use |
+|---|---|
+| `std::vector<T>` | array dinamico `T arr[]` + `ArrayResize` / `ArraySize` |
+| `std::string` | `string` nativo + `StringFormat`, `StringSplit`, `StringFind` |
+| `std::map` | par de arrays `nomes[]` / `valores[]` — ver `Core/Stats.mqh` |
+| `printf` / `cout` | `Print`, `PrintFormat` |
+| `memset` | `ArrayInitialize`, `ZeroMemory` |
+| `nullptr` | `NULL` |
+| excecao | valor de retorno `bool` + `Print` da causa |
+| `std::max` | `MathMax` (e `MathMin`, `MathAbs`, `MathFloor`, `MathCeil`) |
+
+## Armadilhas frequentes
+
+**Arrays em parametros.** Passam por referencia obrigatoriamente e precisam de
+`&`. Note a posicao dos colchetes:
+
+```cpp
+double ATRArr(const IcsBar &a[], int period)   // certo
+void AddLvl(double &lv[], string &nm[], ...)   // certo
+double ATRArr(IcsBar a[], int period)          // ERRADO: nao compila
+```
+
+**Structs.** Sao valor, copiam na atribuicao (`g_m5cur = b;` e valido e copia
+tudo). Nao podem conter objetos de classe. `ZeroMemory` zera a struct inteira.
+
+**`input` e somente leitura.** Nunca atribua a uma variavel `Inp*`. Se precisar
+de um valor derivado e mutavel, crie uma global `g_*` em `Core/Globals.mqh` e
+calcule em `OnInit`.
+
+**`datetime` e um inteiro de segundos.** Aritmetica com `(long)` funciona e o
+projeto usa isso (`((long)t / 86400) * 86400`). Nao sugira biblioteca de data.
+
+**Formato de inteiro grande.** Use `%I64d` em `PrintFormat` para `long`, nao
+`%lld`.
+
+**`ArrayRemove` / `ArrayResize` com reserva.** O projeto usa janela deslizante:
+`ArrayResize(g_m1, n + 1, 1000)` — o terceiro argumento e reserva de memoria, nao
+mexa sem motivo.
+
+## Compilar
+
+Sempre `ICS_Modular.mq5` com **F7** no MetaEditor. Abrir um `.mqh` e apertar F7 so faz
+checagem de sintaxe e nao gera o `.ex5` — isso e esperado, nao e erro.
+
+Nao existe teste unitario no MetaEditor. A validacao e:
+1. compilar com 0 erros e 0 avisos
+2. rodar no Testador de Estrategia
+3. conferir o funil impresso no Diario

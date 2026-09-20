@@ -1,0 +1,33 @@
+# Mantem o Cursor, o VS Code e o MetaEditor gravando do mesmo jeito.
+# O item critico e o charset dos .mq5/.mqh: o MetaEditor grava em ANSI e
+# acentuacao vira lixo.
+
+root = true
+
+[*]
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{mq5,mqh}]
+charset = latin1
+indent_style = space
+indent_size = 3
+max_line_length = 120
+
+[*.md]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+max_line_length = 80
+
+[*.mdc]
+charset = utf-8
+indent_style = space
+indent_size = 2
+
+[*.{json,yml,yaml}]
+charset = utf-8
+indent_style = space
+indent_size = 2

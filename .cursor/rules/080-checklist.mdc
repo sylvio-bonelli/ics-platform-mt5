@@ -1,0 +1,77 @@
+---
+description: Checklist de verificacao antes de considerar uma mudanca pronta. Invoque com @080-checklist ao fechar uma alteracao.
+alwaysApply: false
+---
+
+# Checklist de mudanca
+
+Nao ha teste automatizado neste projeto. A validacao e manual e depende de
+disciplina. Percorra antes de dizer que terminou.
+
+## Sempre
+
+- [ ] Nenhum caractere acentuado em `.mq5` / `.mqh`
+      `grep -rlP '[^\x00-\x7F]' --include='*.mqh' --include='*.mq5' .`
+- [ ] Indentacao de 3 espacos, chave em linha propria
+- [ ] Nenhum arquivo que eu nao precisava tocar aparece no diff
+- [ ] Nenhum comentario existente removido sem motivo
+
+## Se criei ou removi um modulo
+
+- [ ] Include guard presente e com nome unico
+- [ ] Cabecalho declarando de que o modulo depende
+- [ ] `#include` acrescentado em `ICS_Modular.mq5` **na camada correta**
+- [ ] Tabela de modulos atualizada em `ARCHITECTURE.md`
+- [ ] Nenhuma camada baixa passou a depender de camada alta
+
+## Se criei uma chamada entre modulos
+
+- [ ] Se aponta "para frente" na ordem de include, o prototipo entrou em
+      `Core/Prototypes.mqh`
+- [ ] A lista dos pontos de acoplamento em `ARCHITECTURE.md` foi atualizada
+
+## Se acrescentei um parametro
+
+- [ ] Entrou em `Config/Inputs.mqh`, no grupo tematico correto
+- [ ] Rotulo escrito para quem opera, nao para quem programa
+- [ ] Default seguro
+- [ ] Validacao em `OnInit` se puder invalidar outro parametro
+- [ ] Se for filtro de volume/fluxo, respeita `InpBaseline`
+
+## Se acrescentei um filtro de rejeicao
+
+- [ ] Usa `AddReason(why, "motivo curto sem acento")`
+- [ ] `EvaluateTrigger` continua **sem nenhum return antecipado**
+- [ ] Se for de volume/fluxo, esta dentro de `if(!InpBaseline)`
+
+## Se acrescentei coluna no CSV
+
+- [ ] Cabecalho em `OpenFiles()` — `Execution/Logger.mqh`
+- [ ] Montagem de `info` em `Analysis/Trigger.mqh`
+- [ ] Concatenacao em `CloseVirtual()` — `Execution/VirtualTrades.mqh`
+- [ ] Numeros passam por `F(valor, casas)`, nunca `DoubleToString` direto
+
+## Se acrescentei um tipo de evento
+
+- [ ] Linha correspondente em `PrintFunnel()` — `Runtime/Summary.mqh`
+- [ ] Marcador grafico em `LogEvent()` se fizer sentido visualmente
+
+## Se mexi em saida de posicao
+
+- [ ] A logica esta em `TrailStop()`, usada pelos dois lados
+- [ ] Virtual (`UpdateVirtualTrades`) e real (`ManageRealPosition`) continuam
+      simetricos
+
+## Se mexi na maquina de estados
+
+- [ ] Todo caminho sem gatilho chama `RetireZone(motivo)` com motivo descritivo
+- [ ] Nenhuma atribuicao direta de `g_state = ST_IDLE`
+- [ ] A ordem em `ProcessBar()` nao foi alterada sem pedido explicito
+
+## Antes de entregar
+
+- [ ] Compila `ICS_Modular.mq5` com **0 errors, 0 warnings**
+- [ ] Rodei no Testador e o **funil** ainda faz sentido
+      (zonas criadas > rompimentos > deslocamentos > gatilhos)
+- [ ] Comparei um backtest antes/depois se a mudanca afeta sinais
+- [ ] `ARCHITECTURE.md` e `README.md` refletem o estado atual

@@ -1,0 +1,80 @@
+---
+description: Regras para Config/ — como acrescentar parametros e campos de struct
+globs: ["Config/**"]
+alwaysApply: false
+---
+
+# Config/ — parametros e contratos de dados
+
+## Inputs.mqh
+
+A **ordem dos grupos aqui e a ordem exibida na janela de propriedades do
+MetaTrader**. Centralizar tudo neste arquivo e o que da esse controle — nunca
+declare um `input` em outro modulo.
+
+Grupos existentes, nesta ordem:
+
+```
+Geral | Tipo de entrada | Horarios | Dados e volume | Contexto
+Zona institucional (M5) | Absorcao e teste (M1)
+Rompimento e continuidade (M1) | Pullback e gatilho (M1)
+Risco, alvo e gestao
+```
+
+Ao acrescentar um parametro:
+
+1. Coloque no grupo tematicamente correto, nao no fim do arquivo
+2. Comentario de fim de linha e o **rotulo exibido ao usuario** — escreva para
+   quem opera, nao para quem programa:
+   ```cpp
+   input double InpBrkVolMult = 1.5;   // Rompimento: volume >= X vezes o normal
+   ```
+3. Mantenha o alinhamento das colunas do grupo
+4. Valor default tem que ser seguro: o EA precisa rodar sem quebrar se o usuario
+   nunca tocar nele
+5. Se o parametro puder invalidar outro, acrescente a validacao em `OnInit`
+   (`ICS_Modular.mq5`) retornando `INIT_PARAMETERS_INCORRECT` — ha dois exemplos la
+6. Documente no `README.md` se for um parametro que muda o modo de operacao
+
+**Parametro de tempo** entra como `string` no formato `"HH:MM"` e e convertido
+por `ParseHM()` em `OnInit`, guardado numa global `g_*` em minutos do dia.
+
+## Defines.mqh
+
+Contem enums, constantes e as cinco structs. **Nao depende de nada** — e a
+camada 0. Nunca acrescente aqui algo que precise de `Inp*` ou `g_*`.
+
+Ao acrescentar campo em struct:
+
+| Struct | Lembre de |
+|---|---|
+| `IcsZone` | zerar em `OnM5Close` quando `isNew` (`ZeroMemory`) |
+| `IcsSetup` | `StartBreakout` faz `ZeroMemory(g_s)` — o campo nasce zerado |
+| `IcsVTrade` | preencher no bloco de criacao em `Analysis/Trigger.mqh` |
+| `IcsBar` | preencher em `FillFromRates` e/ou `LoadBarTicks` |
+| `IcsAbs` | preencher em `DetectAbsorption` |
+
+Ao acrescentar um enum de parametro, o comentario de cada valor e o texto
+exibido no dropdown do MetaTrader:
+
+```cpp
+enum ENUM_ICS_EXIT
+{
+   ICS_EXIT_FIXED = 0,     // Alvo fixo no primeiro obstaculo
+   ICS_EXIT_TRAIL = 1      // Breakeven + trailing (deixa a tendencia correr)
+};
+```
+
+## O modo BASELINE
+
+`InpBaseline = true` desliga os filtros de volume e fluxo, para medir quanto eles
+agregam. Todo filtro novo dessa natureza **tem que** respeitar:
+
+```cpp
+bool volOk = InpBaseline || volRatio >= InpBrkVolMult;
+```
+
+ou entrar dentro do bloco `if(!InpBaseline) { ... }` em `Analysis/Trigger.mqh`.
+
+Filtros que **nao** sao de volume/fluxo (horario, limite de operacoes do dia,
+stop largo, R:R) continuam valendo no baseline — isso e proposital.
