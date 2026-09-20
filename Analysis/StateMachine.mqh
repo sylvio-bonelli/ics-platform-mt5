@@ -19,6 +19,8 @@
 //|                                                                  |
 //|   ST_BREAKOUT  BreakoutBar()                                     |
 //|     - voltou para dentro: armadilha ou rompimento falho -> ZONE  |
+//|     - InpHoldEntry: X candles sem fechar contra o nivel          |
+//|       dispara EvaluateTrigger(kind=2) sem encerrar a zona        |
 //|     - avancou InpContMult x altura da zona -> ST_IMPULSE         |
 //|     - passou InpContBars sem avancar -> encerra                  |
 //|                                                                  |
@@ -104,6 +106,8 @@ void StartBreakout(const IcsBar &b, int dir, double volRatio, double dpct)
    g_s.brkTime     = b.t;
    g_s.brkVolRatio = volRatio;
    g_s.brkDeltaPct = dpct;
+   g_s.brkLevel    = (dir > 0) ? g_zone.hi : g_zone.lo;
+   g_s.holdDone    = false;
    g_s.impExt      = (dir > 0) ? b.h : b.l;
    g_s.impExtSeq   = b.seq;
 
@@ -131,6 +135,21 @@ void StartBreakout(const IcsBar &b, int dir, double volRatio, double dpct)
    LogEvent("ROMPIMENTO", b.t, dir > 0 ? b.l : b.h, dir,
             StringFormat("Z%d vol=%sx delta=%s%%", g_zone.id, F(volRatio, 2), F(dpct, 0)));
    if(InpEntryMode != ICS_ENTRY_PULLBACK) EvaluateTrigger(b, 1);
+}
+
+//+------------------------------------------------------------------+
+//| kind=2: rompimento se manteve por InpHoldBars fechamentos.       |
+//| Nao encerra a zona. So dispara uma vez.                          |
+//+------------------------------------------------------------------+
+void MaybeHoldTrigger(const IcsBar &b)
+{
+   int dir = g_s.dir;
+   if((dir > 0) ? (b.c < g_s.brkLevel) : (b.c > g_s.brkLevel))
+      g_s.holdDone = true;
+   if(!InpHoldEntry || g_s.holdDone) return;
+   if(b.seq - g_s.brkSeq < InpHoldBars) return;
+   g_s.holdDone = true;
+   EvaluateTrigger(b, 2);
 }
 
 //+------------------------------------------------------------------+
@@ -233,6 +252,8 @@ void BreakoutBar(const IcsBar &b)
       return;
    }
 
+   MaybeHoldTrigger(b);
+
    if(k < InpAcceptBars) return;
 
    double height = g_zone.hi - g_zone.lo;
@@ -267,6 +288,7 @@ void PullbackTrigger(const IcsBar &b)
 void ImpulseBar(const IcsBar &b)
 {
    int  dir    = g_s.dir;
+   MaybeHoldTrigger(b);
    bool newExt = (dir > 0) ? (b.h > g_s.impExt) : (b.l < g_s.impExt);
    if(newExt)
    {

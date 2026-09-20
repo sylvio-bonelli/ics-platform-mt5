@@ -30,7 +30,8 @@ void PrintFunnel()
    PrintFormat("Rompimentos com fluxo: %d | armadilhas: %d | rompimentos falhos: %d",
                CountOf(g_evName, g_evCnt, "ROMPIMENTO"), CountOf(g_evName, g_evCnt, "ARMADILHA"),
                CountOf(g_evName, g_evCnt, "ROMPIMENTO_FALHOU"));
-   PrintFormat("Entradas no rompimento avaliadas: %d", CountOf(g_evName, g_evCnt, "ENTRADA_ROMPIMENTO"));
+   PrintFormat("Entradas no rompimento avaliadas: %d | entradas por aceitacao: %d",
+               CountOf(g_evName, g_evCnt, "ENTRADA_ROMPIMENTO"), CountOf(g_evName, g_evCnt, "ACEITACAO"));
    PrintFormat("Deslocamentos confirmados: %d | pullbacks sem gatilho: %d | gatilhos de pullback: %d",
                CountOf(g_evName, g_evCnt, "DESLOCAMENTO"), CountOf(g_evName, g_evCnt, "PULLBACK_SEM_GATILHO"),
                CountOf(g_evName, g_evCnt, "GATILHO"));
@@ -51,8 +52,8 @@ void PrintSummary()
                   g_tkGrossLoss > 0 ? g_tkGrossWin / g_tkGrossLoss : 0.0);
    if(g_rjN > 0)
       PrintFormat("Rejeitados (simulados): acerto %.1f%% | R medio %.2f", 100.0 * g_rjWins / g_rjN, g_rjSumR / g_rjN);
-   string kn[2] = {"PULLBACK", "ROMPIMENTO"};
-   for(int kd = 0; kd < 2; kd++)
+   string kn[3] = {"PULLBACK", "ROMPIMENTO", "ACEITACAO"};
+   for(int kd = 0; kd < 3; kd++)
    {
       if(g_kAll[kd] == 0) continue;
       PrintFormat("Setup %s | todos os sinais simulados: %d, acerto %.0f%%, total %.2f R, R$ %.2f | executados: %d, total %.2f R",

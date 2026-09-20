@@ -17,6 +17,7 @@
 //|                                                                  |
 //| kind = 0 -> gatilho de PULLBACK (ICS classico)                   |
 //| kind = 1 -> entrada no ROMPIMENTO                                |
+//| kind = 2 -> entrada por ACEITACAO (rompimento se manteve)        |
 //+------------------------------------------------------------------+
 #ifndef __ICSM_TRIGGER_MQH__
 #define __ICSM_TRIGGER_MQH__
@@ -24,6 +25,7 @@
 void EvaluateTrigger(const IcsBar &b, int kind)
 {
    bool   isPb   = (kind == 0);
+   bool   isHold = (kind == 2);
    int    dir    = g_s.dir;
    double height = g_zone.hi - g_zone.lo;
    double nv     = NormalVol(MinOfDay(b.t));
@@ -50,7 +52,19 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    //--- entrada e stop -----------------------------------------------
    double entry   = b.c + dir * InpSlipPts;
    double stopRef = g_s.pbExt;
-   if(!isPb)
+   if(isHold)
+   {
+      // extremo contrario do hold (respeito ao nivel), nao o stop do rompimento
+      int a = IdxOf(g_s.brkSeq), z = IdxOf(b.seq);
+      stopRef = (dir > 0) ? b.l : b.h;
+      if(a >= 0 && z >= a)
+      {
+         stopRef = (dir > 0) ? DBL_MAX : -DBL_MAX;
+         for(int i = a; i <= z; i++)
+            stopRef = (dir > 0) ? MathMin(stopRef, g_m1[i].l) : MathMax(stopRef, g_m1[i].h);
+      }
+   }
+   else if(!isPb)
    {
       if(InpBrkStopMode == ICS_BSTOP_POC)       stopRef = g_zone.poc;
       else if(InpBrkStopMode == ICS_BSTOP_ZONE) stopRef = (dir > 0) ? g_zone.lo : g_zone.hi;
@@ -142,8 +156,8 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    {
       if(isPb && pbVolRatio > InpPbMaxVolRatio) AddReason(why, "pullback com volume alto");
       if(isPb && pbContra > InpPbMaxDeltaRatio) AddReason(why, "delta contrario forte no pullback");
-      if(trigVolRatio < InpTrigVolMult)     AddReason(why, "gatilho sem volume");
-      if(trigDeltaPct <= InpTrigMinDeltaPct) AddReason(why, "gatilho sem delta");
+      if(!isHold && trigVolRatio < InpTrigVolMult)     AddReason(why, "gatilho sem volume");
+      if(!isHold && trigDeltaPct <= InpTrigMinDeltaPct) AddReason(why, "gatilho sem delta");
       if(InpReqAbsorption && !hasAbs)       AddReason(why, "sem absorcao");
       if(InpReqTest && !hasTest)            AddReason(why, "sem teste");
    }
@@ -184,10 +198,12 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    g_signals++;
 
    //--- registro da operacao simulada ---------------------------------
-   string ctxs = (g_ctx > 0) ? "alta" : ((g_ctx < 0) ? "baixa" : "neutro");
+   string ctxs   = (g_ctx > 0) ? "alta" : ((g_ctx < 0) ? "baixa" : "neutro");
+   string setup  = isPb ? "PULLBACK" : (isHold ? "ACEITACAO" : "ROMPIMENTO");
+   string evName = isPb ? "GATILHO" : (isHold ? "ACEITACAO" : "ENTRADA_ROMPIMENTO");
    string info = IntegerToString(g_signals) + ";" + TimeToString(b.t, TIME_DATE) + ";" +
                  TimeToString(b.t + 60, TIME_MINUTES) + ";" + (dir > 0 ? "COMPRA" : "VENDA") + ";" +
-                 (isPb ? "PULLBACK" : "ROMPIMENTO") + ";" +
+                 setup + ";" +
                  status + ";" + why + ";" + F(sc, 0) + ";" + ctxs + ";" +
                  IntegerToString(g_zone.id) + ";" + F(g_zone.lo, 0) + ";" + F(g_zone.hi, 0) + ";" +
                  IntegerToString(g_zone.m5bars) + ";" + F(g_zone.relvol, 2) + ";" +
@@ -217,7 +233,7 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    g_vt[k].info     = info;
 
    //--- desenho -------------------------------------------------------
-   string tip = StringFormat("%s %s %s | score %.0f | RR %.2f | %s", isPb ? "PULLBACK" : "ROMPIMENTO", dir > 0 ? "COMPRA" : "VENDA", status, sc, rr,
+   string tip = StringFormat("%s %s %s | score %.0f | RR %.2f | %s", setup, dir > 0 ? "COMPRA" : "VENDA", status, sc, rr,
                              why == "" ? "todos os filtros ok" : why);
    color clr = taken ? (dir > 0 ? clrLime : clrRed) : clrGray;
    DrawMark(b.t, dir > 0 ? b.l : b.h, dir > 0 ? 241 : 242, clr, tip, dir > 0);
@@ -228,7 +244,7 @@ void EvaluateTrigger(const IcsBar &b, int kind)
       DrawLevel(b.t, t1, stop,   clrRed,   STYLE_SOLID, "stop");
       DrawLevel(b.t, t1, target, clrLime,  STYLE_SOLID, "alvo: " + tsrc);
    }
-   LogEvent(isPb ? "GATILHO" : "ENTRADA_ROMPIMENTO", b.t, b.c, dir, status + " score=" + F(sc, 0) + " " + why);
+   LogEvent(evName, b.t, b.c, dir, status + " score=" + F(sc, 0) + " " + why);
 
    if(isPb) RetireZone("gatilho avaliado");
 }

@@ -97,6 +97,11 @@ int OnInit()
       Print("Aceitacao: o minimo nao pode ser maior que o numero de barras");
       return INIT_PARAMETERS_INCORRECT;
    }
+   if(InpHoldBars < 1)
+   {
+      Print("Manter: o numero de candles deve ser >= 1");
+      return INIT_PARAMETERS_INCORRECT;
+   }
    if(InpDespWickMult <= 0 || InpFullBodyFrac <= 0 || InpFullBodyFrac > 1)
    {
       Print("Reversao: pavio/corpo deve ser > 0 e a fracao de corpo cheio entre 0 e 1");

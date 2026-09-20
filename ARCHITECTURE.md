@@ -164,6 +164,11 @@ não geram sinais.
          │                                            ▼
          │                                       ST_BREAKOUT
          │                                            │
+         │                                            │ InpHoldEntry: X candles
+         │                                            │ sem fechar contra o nível
+         │                                            │ → EvaluateTrigger(kind=2)
+         │                                            │   (não encerra a zona)
+         │                                            │
          │  RetireZone()                              │ avançou
          │  (qualquer estado)                         │ InpContMult × altura
          │                                            ▼
@@ -172,11 +177,17 @@ não geram sinais.
                                        pullback qualificado
                                        + retomada do micro-extremo
                                                       ▼
-                                              EvaluateTrigger()
+                                              EvaluateTrigger(kind=0)
 ```
 
+Três gatilhos, populações separadas no CSV (`PULLBACK` / `ROMPIMENTO` / `ACEITACAO`):
+
+- `kind=1` no candle do rompimento (`InpEntryMode`)
+- `kind=2` após `InpHoldBars` fechamentos sem cruzar `brkLevel` (`InpHoldEntry`)
+- `kind=0` no pullback clássico
+
 Transições de volta para `ST_ZONE`: rompimento devolvido dentro do prazo
-(armadilha) ou rompimento falho.
+(armadilha) ou rompimento falho. Fechar contra `brkLevel` invalida o hold.
 
 ---
 

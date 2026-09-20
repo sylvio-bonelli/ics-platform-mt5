@@ -92,6 +92,8 @@ struct IcsSetup
    long     brkSeq;
    datetime brkTime;
    double   brkVolRatio, brkDeltaPct;
+   double   brkLevel;                        // borda rompida (hi compra / lo venda)
+   bool     holdDone;                        // gatilho de aceitacao ja disparado ou invalidado
    int      insideCount;                     // retornos tolerados na janela de aceitacao
    double   impExt;                          // extremo do impulso
    long     impExtSeq;
@@ -122,7 +124,7 @@ struct IcsVTrade
 {
    bool     active;
    bool     taken;                           // passou por todos os filtros
-   int      kind;                            // 0 = pullback, 1 = rompimento
+   int      kind;                            // 0 = pullback, 1 = rompimento, 2 = aceitacao
    int      dir;
    long     startSeq;
    int      bars;

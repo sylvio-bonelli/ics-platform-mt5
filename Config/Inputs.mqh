@@ -71,6 +71,8 @@ input int    InpAcceptMin       = 2;         // Aceitacao: minimo de fechamentos
 input int    InpTrapBars        = 5;         // Armadilha: retorno a zona em ate X barras
 input double InpContMult        = 1.0;       // Continuidade: avanco >= X vezes a altura da zona
 input int    InpContBars        = 10;        // Continuidade: prazo em barras
+input bool   InpHoldEntry       = true;      // Entrar se o rompimento se mantiver
+input int    InpHoldBars        = 5;         // Manter: candles sem fechar contra o nivel
 input int    InpOriginLookback  = 5;         // Barras antes do rompimento para a origem do impulso
 
 input group "=== Pullback e gatilho (M1) ==="

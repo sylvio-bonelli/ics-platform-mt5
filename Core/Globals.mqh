@@ -98,8 +98,8 @@ int       g_rjN = 0, g_rjWins = 0;
 double    g_rjSumR = 0;
 string    g_rsnName[];          // motivos de rejeicao
 string    g_evName[], g_retName[];
-int       g_kAll[2], g_kWin[2], g_kTkN[2];       // [0] = pullback, [1] = rompimento
-double    g_kR[2], g_kBRL[2], g_kTkR[2];
+int       g_kAll[3], g_kWin[3], g_kTkN[3];       // [0] pullback [1] rompimento [2] aceitacao
+double    g_kR[3], g_kBRL[3], g_kTkR[3];
 int       g_evCnt[], g_retCnt[];
 int       g_rsnCnt[];
 
