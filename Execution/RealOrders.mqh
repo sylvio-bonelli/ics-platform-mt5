@@ -85,6 +85,23 @@ bool SendOrder(int dir, double sl, double tp, int sigId)
 }
 
 //+------------------------------------------------------------------+
+//| Teto de prejuizo em R$: marca o dia e zera a posicao se houver.  |
+//| Chamado a cada tick (nao so na virada do minuto) porque o        |
+//| flutuante pode estourar o orcamento intra-barra.                 |
+//+------------------------------------------------------------------+
+void EnforceDailyLossLimit()
+{
+   if(g_replay || !DailyLossBreached()) return;
+   if(!g_dayLossHalt)
+   {
+      g_dayLossHalt = true;
+      PrintFormat("ICS Modular: limite de prejuizo do dia (R$ %.2f). PnL R$ %.2f. Sem novas entradas.",
+                  InpMaxLossDayBRL, DayPnlBRL());
+   }
+   if(HasRealPosition()) CloseRealPosition("limite de prejuizo do dia");
+}
+
+//+------------------------------------------------------------------+
 //| Zera a posicao real                                              |
 //+------------------------------------------------------------------+
 void CloseRealPosition(string why)

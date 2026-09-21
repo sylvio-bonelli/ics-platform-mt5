@@ -37,6 +37,15 @@ string   B(bool v)             { return v ? "sim" : "nao"; }
 //--- ordens reais liberadas? (no testador sempre; ao vivo so com a trava aberta)
 bool     OrdersAllowed()       { return InpTradeEnabled && (g_isTester || InpLiveOrders); }
 
+//--- PnL da conta desde o snapshot do dia (inclui flutuante e custo real)
+double   DayPnlBRL()           { return AccountInfoDouble(ACCOUNT_EQUITY) - g_dayStartEquity; }
+
+//--- teto de prejuizo em R$ estourou? (0 = desligado)
+bool     DailyLossBreached()
+{
+   return (InpMaxLossDayBRL > 0 && DayPnlBRL() <= -InpMaxLossDayBRL);
+}
+
 //+------------------------------------------------------------------+
 //| Numero formatado para o CSV (virgula decimal opcional)           |
 //+------------------------------------------------------------------+

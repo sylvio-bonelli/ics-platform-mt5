@@ -123,6 +123,7 @@ string InputsSnapshot()
    AddKV(s, "InpFullBodyFrac",    F(InpFullBodyFrac, 2));
    AddKV(s, "InpMaxTradesDay",    IntegerToString(InpMaxTradesDay));
    AddKV(s, "InpMaxLossesDay",    IntegerToString(InpMaxLossesDay));
+   AddKV(s, "InpMaxLossDayBRL",   F(InpMaxLossDayBRL, 2));
    return s;
 }
 

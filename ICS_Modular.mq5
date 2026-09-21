@@ -27,7 +27,7 @@
 //| cima. Ao acrescentar um modulo, respeite a camada dele.          |
 //+------------------------------------------------------------------+
 #property copyright "ICS - Institutional Continuation Setup"
-#property version   "1.200"
+#property version   "1.210"
 #property description "Prova de conceito do ICS no WIN (M1)."
 #property description "Zona institucional -> rompimento com fluxo -> primeiro pullback fraco -> retomada."
 
@@ -118,6 +118,11 @@ int OnInit()
       Print("Reversao: pavio/corpo deve ser > 0 e a fracao de corpo cheio entre 0 e 1");
       return INIT_PARAMETERS_INCORRECT;
    }
+   if(InpMaxLossDayBRL < 0)
+   {
+      Print("Prejuizo maximo do dia nao pode ser negativo (0 = desligado)");
+      return INIT_PARAMETERS_INCORRECT;
+   }
    if(StringFind(_Symbol, "WIN$") >= 0)
       Print("AVISO: WIN$ nao tem lado agressor nem bid/ask. Use o contrato (ex.: WINV26) ou WIN_ICS.");
 
@@ -149,9 +154,13 @@ int OnInit()
    LoadHistory();
    if(!g_isTester) ProcessPending(TimeCurrent());
    g_replay = false;
+   g_dayStartEquity = AccountInfoDouble(ACCOUNT_EQUITY);
 
    if(!g_isTester && InpTradeEnabled && !InpLiveOrders)
       Print("ICS Modular ao vivo: ordens BLOQUEADAS (somente alertas). Para operar, ative 'AO VIVO: permitir ordens reais'.");
+   if(InpMaxLossDayBRL > 0)
+      PrintFormat("Limite de prejuizo do dia: R$ %.2f | equity atual R$ %.2f",
+                  InpMaxLossDayBRL, g_dayStartEquity);
    PrintFormat("ICS Modular v%s iniciado em %s | run %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
                ICSM_VERSION, _Symbol, g_runId, g_tick, g_pointValue,
                InpBaseline ? "BASELINE" : "COMPLETO", OrdersAllowed() ? "sim" : "nao");
@@ -159,10 +168,11 @@ int OnInit()
 }
 
 //+------------------------------------------------------------------+
-//| Tick: o EA so trabalha na virada do minuto                       |
+//| Tick: setup so na virada do minuto; teto BRL a cada tick         |
 //+------------------------------------------------------------------+
 void OnTick()
 {
+   EnforceDailyLossLimit();   // intra-barra: o resto do EA so na virada do minuto
    datetime now    = TimeCurrent();
    datetime curMin = (datetime)(((long)now / 60) * 60);
    if(curMin == g_curMinute) return;

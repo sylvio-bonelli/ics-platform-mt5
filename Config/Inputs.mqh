@@ -115,6 +115,7 @@ input double InpDespWickMult    = 2.0;       // Desespero: pavio >= X vezes o co
 input double InpFullBodyFrac    = 0.60;      // Corpo cheio: corpo >= X da amplitude
 input int    InpMaxTradesDay    = 3;         // Maximo de operacoes por dia
 input int    InpMaxLossesDay    = 2;         // Para apos X perdas no dia
+input double InpMaxLossDayBRL   = 0;         // Prejuizo maximo do dia (R$, 0 = off)
 
 #endif // __ICSM_INPUTS_MQH__
 //+------------------------------------------------------------------+

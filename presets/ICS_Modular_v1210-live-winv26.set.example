@@ -1,0 +1,109 @@
+; ICS Modular v1.210 — primeiro dia ao vivo WINV26 M1
+; Setup = defaults atuais. So o operacional muda:
+;   InpLiveOrders      true
+;   InpMaxLossDayBRL   120
+;   InpMaxTradesDay    2
+;   InpMaxLossesDay    1
+;   InpRunTag          live1
+; InpExecuteAll permanece false. Nao use este preset no Testador
+; se o objetivo for estudo — o LiveOrders e ignorado la, mas o
+; teto de R$ 120 vale na equity do testador.
+;
+; Importar: grafico WINV26 M1 -> EA -> Inputs -> Carregar.
+; Compile ICS_Modular.mq5 (F7) antes. Algo Trading verde.
+;
+; === Geral ===
+InpTradeEnabled=true||false||0||true||N
+InpLiveOrders=true||false||0||true||N
+InpExecuteAll=false||false||0||true||N
+InpBaseline=false||false||0||true||N
+InpLots=1.0||1.0||0.100000||10.000000||N
+InpMagic=20260918||20260918||1||2147483647||N
+InpRunTag=live1
+InpLogBars=true||false||0||true||N
+InpAlerts=true||false||0||true||N
+InpPush=false||false||0||true||N
+InpDraw=true||false||0||true||N
+InpCommaDecimal=true||false||0||true||N
+; === Tipo de entrada ===
+InpEntryMode=2||0||0||2||N
+InpBrkStopMode=0||0||0||2||N
+InpBrkMaxVolMult=0.0||0.0||0.000000||0.000000||N
+; === Horarios (hora do servidor) ===
+InpSessionStart=09:00
+InpNoEntryFirstMin=15||15||1||150||N
+InpLastEntry=17:00
+InpFlatTime=18:15
+; === Dados e volume ===
+InpDeltaMode=0||0||0||2||N
+InpVolDays=10||10||1||100||N
+InpVolMinDays=3||3||1||30||N
+InpProfileStep=50||50||1||500||N
+InpHvnFactor=1.5||1.5||0.150000||15.000000||N
+; === Contexto ===
+InpCtxFilter=1||0||0||2||N
+InpCtxSlopeBars=30||30||1||300||N
+; === Zona institucional (M5) ===
+InpZoneMinBars=6||6||1||60||N
+InpZoneMaxBars=24||24||1||240||N
+InpZoneMaxRangeATR=2.5||2.5||0.250000||25.000000||N
+InpZoneMaxER=0.3||0.3||0.030000||3.000000||N
+InpZoneMinRelVol=1.0||1.0||0.100000||10.000000||N
+InpZoneStaleBars=15||15||1||150||N
+InpTouchTolPts=10.0||10.0||1.000000||100.000000||N
+; === Reteste falho (M1) ===
+InpRejectEntry=true||false||0||true||N
+InpRejectMinRetr=0.2||0.2||0.020000||2.000000||N
+InpRejectMaxBars=30||30||1||300||N
+; === Absorcao e teste (M1) ===
+InpAbsVolMult=2.5||2.5||0.250000||25.000000||N
+InpAbsMaxDispATR=0.5||0.5||0.050000||5.000000||N
+InpAbsLookback=15||15||1||150||N
+InpReqAbsorption=false||false||0||true||N
+InpTestVolMult=0.7||0.7||0.070000||7.000000||N
+InpReqTest=false||false||0||true||N
+; === Rompimento e continuidade (M1) ===
+InpBrkVolMult=1.5||1.5||0.150000||15.000000||N
+InpBrkDeltaPct=20.0||20.0||2.000000||200.000000||N
+InpAcceptBars=3||3||1||30||N
+InpAcceptMin=2||2||1||20||N
+InpTrapBars=5||5||1||50||N
+InpContMult=1.0||1.0||0.100000||10.000000||N
+InpContBars=10||10||1||100||N
+InpHoldEntry=true||false||0||true||N
+InpHoldBars=5||5||1||50||N
+InpOriginLookback=5||5||1||50||N
+; === Pullback e gatilho (M1) ===
+InpPbMinRetr=0.2||0.2||0.020000||2.000000||N
+InpPbGoodRetr=0.5||0.5||0.050000||5.000000||N
+InpPbMaxRetr=0.9||0.9||0.090000||9.000000||N
+InpPbMaxBars=30||30||1||300||N
+InpMaxPullbacks=1||1||1||10||N
+InpPbMaxVolRatio=0.6||0.6||0.060000||6.000000||N
+InpPbMaxDeltaRatio=0.5||0.5||0.050000||5.000000||N
+InpTrigVolMult=1.0||1.0||0.100000||10.000000||N
+InpTrigMinDeltaPct=0.0||0.0||0.000000||0.000000||N
+; === Risco, alvo e gestao ===
+InpStopBufPts=10.0||10.0||1.000000||100.000000||N
+InpMaxStopATR=1.5||1.5||0.150000||15.000000||N
+InpMinRR=2.0||2.0||0.200000||20.000000||N
+InpTargetMode=0||0||0||1||N
+InpTargetOffsetPts=5.0||5.0||0.500000||50.000000||N
+InpProjMult=1.0||1.0||0.100000||10.000000||N
+InpMinScore=0.0||0.0||0.000000||0.000000||N
+InpSlipPts=5.0||5.0||0.500000||50.000000||N
+InpCostPerContract=0.5||0.5||0.050000||5.000000||N
+InpMinStopATR=0.5||0.5||0.050000||5.000000||N
+InpExitMode=1||0||0||1||N
+InpBEAtR=1.0||1.0||0.100000||10.000000||N
+InpTrailStartR=1.5||1.5||0.150000||15.000000||N
+InpTrailATR=1.0||1.0||0.100000||10.000000||N
+InpTrailTpMult=3.0||3.0||0.300000||30.000000||N
+InpTimeStopBars=30||30||1||300||N
+InpTimeStopMinR=0.5||0.5||0.050000||5.000000||N
+InpReversalExit=true||false||0||true||N
+InpDespWickMult=2.0||2.0||0.200000||20.000000||N
+InpFullBodyFrac=0.6||0.6||0.060000||6.000000||N
+InpMaxTradesDay=2||3||1||30||N
+InpMaxLossesDay=1||2||1||20||N
+InpMaxLossDayBRL=120.0||0.0||0.000000||10000.000000||N

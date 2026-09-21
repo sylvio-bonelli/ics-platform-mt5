@@ -10,7 +10,7 @@
 
 //--- tamanho do vetor do Volume Profile do dia (niveis de preco)
 #define PROF_SIZE     1200
-#define ICSM_VERSION  "1.200"
+#define ICSM_VERSION  "1.210"
 
 //--- estados da maquina de estados (ver Analysis/StateMachine.mqh)
 #define ST_IDLE     0   // sem zona candidata

@@ -2,10 +2,10 @@
 
 Expert Advisor para MetaTrader 5, mini índice (WIN), gráfico M1.
 
-**v1.200** — governança para comparar conta real × Testador: `run_id`, ambiente
-no nome dos CSV, barras M1, ordens reais e funil persistido. Protocolo em
-[`docs/COMPARATIVO.md`](docs/COMPARATIVO.md). A 0.19 era o reteste falho
-(`InpRejectEntry`).
+**v1.210** — teto de prejuízo do dia em R$ (`InpMaxLossDayBRL`). Default `0`
+(desligado). Estourou: sem entrada nova e zera a posição real no tick.
+Preset ao vivo: `presets/ICS_Modular_v1210-live-winv26.set.example`.
+A 1.200 era a governança live × Testador.
 
 ---
 
@@ -110,9 +110,14 @@ Requer **as duas** travas abertas:
 |---|---|
 | `InpTradeEnabled` | `true` |
 | `InpLiveOrders` | `true` |
+| `InpMaxLossDayBRL` | orçamento do dia em R$ (`0` = off) |
 
 Com `InpLiveOrders = false` o EA roda normalmente mas só emite alertas — nenhuma
 ordem é enviada. É proposital.
+
+O teto em R$ mede a **equity da conta** desde o snapshot do dia, não o P&L
+virtual. Folga intra-barra até o `PositionClose` voltar ainda existe — a
+rede da corretora precisa ficar acima do valor do input.
 
 ---
 

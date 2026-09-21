@@ -136,12 +136,13 @@ gráfico.
 `g_draw`. Some no `OnDeinit`.
 
 ```
-ICS Modular v1.200 [BASELINE]
+ICS Modular v1.210 [BASELINE]
 Estado: ...
 Contexto: alta | baixa | neutro
 Zona Z<id>: lo - hi
 Retracao: N% | pullback valido: sim|nao
 Gatilhos: N | executados: N
+PnL dia: R$ x | limite: R$ y | PARADO
 ```
 
 | Campo | O que é |
@@ -153,6 +154,7 @@ Gatilhos: N | executados: N
 | **Retracao** | só em `ST_IMPULSE`; `pullback valido` = já passou `InpPbMinRetr` |
 | **Gatilhos** | `g_signals` — todos os avaliados no dia/sessão corrente do EA |
 | **executados** | `g_tkN` — só `taken` (não inclui `ESTUDO_EXECUTADO`) |
+| **PnL dia** | só se `InpMaxLossDayBRL > 0`. `PARADO` = `g_dayLossHalt` |
 
 O painel é estado **agora**, não histórico. Para a trilha completa use o
 CSV de eventos.

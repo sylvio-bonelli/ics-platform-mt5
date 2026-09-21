@@ -62,6 +62,8 @@ bool      g_hasPrev = false;
 datetime  g_day = 0;
 double    g_dayHigh = -1, g_dayLow = -1, g_vwapPV = 0, g_vwapV = 0;
 int       g_tradesToday = 0, g_lossesToday = 0;
+double    g_dayStartEquity = 0; // equity no StartDay / OnInit (kill-switch BRL)
+bool      g_dayLossHalt = false; // true depois que InpMaxLossDayBRL estoura
 int       g_ctx = 0;            // contexto: +1 alta, -1 baixa, 0 neutro
 
 //--- leitura de fluxo (ticks) ---------------------------------------

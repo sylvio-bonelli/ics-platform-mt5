@@ -1420,6 +1420,32 @@ impede sobreposição; o teto é extra.
 não incrementa. Dois stops reais no dia calam as entradas seguintes; o CSV
 ainda registra os gatilhos com este motivo.
 
+### `InpMaxLossDayBRL`
+
+- **Tipo / default:** `double` = `0`
+- **Rótulo:** Prejuizo maximo do dia (R$, 0 = off)
+- **Onde:** `Core/Utils.mqh` (`DayPnlBRL`, `DailyLossBreached`);
+  `Execution/RealOrders.mqh` (`EnforceDailyLossLimit`); `Analysis/Trigger.mqh`;
+  `ICS_Modular.mq5` (`OnTick`, `OnInit`)
+- **Motivo CSV:** `limite de prejuizo do dia`
+- **Saída real:** `CLOSE` com o mesmo texto se houver posição aberta
+
+**O que faz.** `0` desliga. Caso contrário, compara
+`AccountEquity − g_dayStartEquity` com `−InpMaxLossDayBRL`. O snapshot de
+equity é feito no `OnInit` (depois do replay) e de novo em cada `StartDay`
+fora de replay. Estourou: `g_dayLossHalt` fica verdadeiro até o próximo
+`StartDay`, novas entradas são rejeitadas e a posição real é zerada **no
+tick** (não espera o M1 fechar). `InpExecuteAll` também respeita o teto.
+
+É o PnL **da conta**, não só do mágico — qualquer outro débito no mesmo
+login conta. Depósito no meio do dia afasta o teto; saque aproxima.
+
+**Para análise.** Vale no Baseline. Não é filtro de setup: é orçamento.
+Rejeitados com este motivo ainda viram virtual. Folga intra-barra ainda
+existe (slip / gap até o `PositionClose` retornar). A rede da corretora
+precisa ficar **acima** deste valor. Default `0` deixa o backtest antigo
+igual.
+
 ---
 
 ## Validações em `OnInit`
@@ -1435,6 +1461,7 @@ ainda registra os gatilhos com este motivo.
 | `InpRejectMaxBars < 1` | Reteste falho: o prazo em barras deve ser >= 1 |
 | `InpRejectMinRetr` fora de `(0, 1]` | Reteste falho: a retracao minima deve estar em (0, 1] |
 | `InpDespWickMult <= 0` ou `InpFullBodyFrac` fora de `(0, 1]` | Reversao: pavio/corpo deve ser > 0 e a fracao de corpo cheio entre 0 e 1 |
+| `InpMaxLossDayBRL < 0` | Prejuizo maximo do dia nao pode ser negativo (0 = desligado) |
 
 Aviso (não aborta): símbolo com `WIN$` no nome.
 
@@ -1445,6 +1472,7 @@ Outros limites silenciosos:
 - `InpMinStopATR = 0` desliga o piso de stop
 - `InpBrkMaxVolMult = 0` desliga o teto climático
 - `InpMinScore = 0` desliga o piso de score
+- `InpMaxLossDayBRL = 0` desliga o teto de prejuízo em R$
 
 Não há validação de `InpZoneMinBars <= InpZoneMaxBars` nem de
 `InpPbMinRetr <= InpPbGoodRetr <= InpPbMaxRetr`. Combinação invertida
@@ -1463,6 +1491,7 @@ Ordem em que `AddReason` acrescenta (vários podem coexistir):
 | `horario` | `InpSessionStart` + `InpNoEntryFirstMin` / `InpLastEntry` |
 | `limite de operacoes do dia` | `InpMaxTradesDay` |
 | `limite de perdas do dia` | `InpMaxLossesDay` |
+| `limite de prejuizo do dia` | `InpMaxLossDayBRL` |
 | `contra o contexto` | `InpCtxFilter = BLOCK` |
 | `sem contexto a favor` | `InpCtxFilter = REQUIRE` |
 | `rompimento climatico` | `InpBrkMaxVolMult` |

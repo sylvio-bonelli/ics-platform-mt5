@@ -154,6 +154,7 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    if(mod < g_sessStart + InpNoEntryFirstMin || mod >= g_lastEntry) AddReason(why, "horario");
    if(g_tradesToday >= InpMaxTradesDay)                AddReason(why, "limite de operacoes do dia");
    if(g_lossesToday >= InpMaxLossesDay)                AddReason(why, "limite de perdas do dia");
+   if(g_dayLossHalt || DailyLossBreached())             AddReason(why, "limite de prejuizo do dia");
    if(InpCtxFilter == ICS_CTX_BLOCK   && g_ctx == -dir) AddReason(why, "contra o contexto");
    if(InpCtxFilter == ICS_CTX_REQUIRE && g_ctx != dir)  AddReason(why, "sem contexto a favor");
    if(InpBrkMaxVolMult > 0 && g_s.brkVolRatio > InpBrkMaxVolMult) AddReason(why, "rompimento climatico");
@@ -184,7 +185,8 @@ void EvaluateTrigger(const IcsBar &b, int kind)
          why    = "falha no envio da ordem";
       }
    }
-   else if(!taken && InpExecuteAll && g_isTester && !g_replay && mod < g_flat && !HasRealPosition())
+   else if(!taken && InpExecuteAll && g_isTester && !g_replay && mod < g_flat &&
+           !HasRealPosition() && !g_dayLossHalt && !DailyLossBreached())
    {
       // modo de estudo: executa tambem os rejeitados para medir o custo dos filtros
       if(SendOrder(dir, stop, target, sigId)) status = "ESTUDO_EXECUTADO";

@@ -27,6 +27,9 @@ void StartDay(datetime d)
    g_vwapV      = 0;
    g_tradesToday= 0;
    g_lossesToday= 0;
+   g_dayLossHalt= false;
+   if(!g_replay)
+      g_dayStartEquity = AccountInfoDouble(ACCOUNT_EQUITY);
    g_ctx        = 0;
    ArrayInitialize(g_volToday, 0.0);
    ProfReset();

@@ -61,7 +61,7 @@ camada 7  Runtime/     orquestração
 |---|---|
 | `Globals.mqh` | todo o estado compartilhado (prefixo `g_`) + `CTrade` |
 | `Prototypes.mqh` | declarações antecipadas dos 10 pontos de acoplamento cruzado |
-| `Utils.mqh` | `DayStart` `MinOfDay` `Clamp01` `RoundDn/Up` `TS` `B` `F` `ParseHM` `AddReason` `IdxOf` `WriteLine` `OrdersAllowed` `ATRArr` |
+| `Utils.mqh` | `DayStart` `MinOfDay` `Clamp01` `RoundDn/Up` `TS` `B` `F` `ParseHM` `AddReason` `IdxOf` `WriteLine` `OrdersAllowed` `DayPnlBRL` `DailyLossBreached` `ATRArr` |
 | `Stats.mqh` | `CountIn` `CountOf` `CountReasons` — contadores nomeados |
 
 ### Data/ — camadas 2 e 4
@@ -86,7 +86,7 @@ camada 7  Runtime/     orquestração
 |---|---|---|
 | `Logger.mqh` | abre os CSV, registra eventos, barras, ordens e identidade da run | `OpenFiles` `LogEvent` `LogBar` `LogOrder` `WriteRun` `WriteFunnel` |
 | `VirtualTrades.mqh` | operações simuladas (executadas **e** rejeitadas) | `CloseVirtual` `CloseAllVirtual` `TrailStop` `ReversalExitSignal` `UpdateVirtualTrades` |
-| `RealOrders.mqh` | posição real no MetaTrader | `HasRealPosition` `HasOpenTrade` `SendOrder` `CloseRealPosition` `ManageRealPosition` |
+| `RealOrders.mqh` | posição real no MetaTrader | `HasRealPosition` `HasOpenTrade` `SendOrder` `CloseRealPosition` `EnforceDailyLossLimit` `ManageRealPosition` |
 
 ### Analysis/ — camada 6 (o núcleo do setup)
 
@@ -153,6 +153,10 @@ comportamento do EA:
 
 `live = false` durante `LoadHistory()`: as barras alimentam os acumuladores mas
 não geram sinais.
+
+Exceção no `OnTick`: `EnforceDailyLossLimit()` roda **em todo tick** (não só na
+virada do M1). O resto do EA continua barra a barra. Sem isso o flutuante
+estoura o orçamento intra-barra e o corte só viria no minuto seguinte.
 
 ---
 
