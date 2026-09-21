@@ -19,6 +19,7 @@ input bool   InpBaseline        = false;     // Modo BASELINE (desliga filtros d
 input double InpLots            = 1;         // Contratos por operacao
 input long   InpMagic           = 20260918;  // Numero magico
 input string InpRunTag          = "";        // Sufixo dos arquivos CSV (ex.: teste1)
+input bool   InpLogBars         = true;      // Gravar CSV de barras M1 (comparativo)
 input bool   InpAlerts          = true;      // Alertas na tela (ao vivo)
 input bool   InpPush            = false;     // Notificacao no celular (ao vivo)
 input bool   InpDraw            = true;      // Desenhar zonas e sinais no grafico

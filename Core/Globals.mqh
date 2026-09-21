@@ -34,6 +34,8 @@ bool      g_replay    = false;  // true enquanto reprocessa historico (nao opera
 bool      g_isTester  = false;
 bool      g_draw      = false;
 bool      g_files     = false;
+string    g_runId     = "";     // identidade da run (data_hora_L|T_conta)
+string    g_env       = "";     // live | tester
 
 //--- simbolo --------------------------------------------------------
 double    g_tick      = 5.0;
@@ -66,6 +68,10 @@ int       g_ctx = 0;            // contexto: +1 alta, -1 baixa, 0 neutro
 MqlTick   g_ticks[];
 double    g_lastTradePrice = 0;
 int       g_lastSide = 0;
+int       g_barTicks = 0;       // negocios do ultimo LoadBarTicks
+int       g_barTicksFlag = 0;   // desses, quantos tinham flag BUY/SELL
+double    g_barBid = 0;         // bid do ultimo tick do minuto (0 = ausente)
+double    g_barAsk = 0;
 
 //--- setup em andamento ---------------------------------------------
 IcsZone   g_zone;
@@ -81,9 +87,12 @@ IcsVTrade g_vt[];
 double    g_realRisk = 0;
 double    g_realBest = 0, g_realTrail = 0;
 bool      g_realBE = false;
+int       g_realSignalId = 0;   // id do sinal que abriu a posicao real
 
 //--- arquivos e objetos grafico -------------------------------------
 int       g_fSig = INVALID_HANDLE, g_fEvt = INVALID_HANDLE;
+int       g_fRun = INVALID_HANDLE, g_fBar = INVALID_HANDLE;
+int       g_fOrd = INVALID_HANDLE, g_fFun = INVALID_HANDLE;
 long      g_objN = 0;
 
 //--- diagnostico de qualidade dos dados -----------------------------

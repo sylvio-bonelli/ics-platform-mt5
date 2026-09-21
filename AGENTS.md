@@ -77,6 +77,7 @@ compilador MQL5 fora do MetaEditor.
 | o que um objeto no gráfico significa | `docs/GRAFICO.md` |
 | um campo novo em struct | `Config/Defines.mqh` |
 | colunas do CSV | `Execution/Logger.mqh` **e** `Analysis/Trigger.mqh` **e** `Execution/VirtualTrades.mqh` |
+| comparar real vs tester | `docs/COMPARATIVO.md` |
 
 ---
 

@@ -7,7 +7,8 @@ A **fonte da verdade** é o código. Este arquivo explica o *porquê* e o *efeit
 no funil / CSV*. Se default, rótulo ou comportamento divergirem, o `.mqh` vence.
 
 Vocabulário do setup: [`GLOSSARY.md`](GLOSSARY.md). Legenda do gráfico:
-[`GRAFICO.md`](GRAFICO.md).
+[`GRAFICO.md`](GRAFICO.md). Comparar conta real × Testador:
+[`COMPARATIVO.md`](COMPARATIVO.md).
 
 ---
 
@@ -216,10 +217,32 @@ zeragem alheia. O `ICS_EA` antigo usava `26091601` de propósito diferente.
 - **Onde:** `Execution/Logger.mqh` (`OpenFiles`)
 - **Motivo CSV:** —
 
-**O que faz.** Nome: `ICS_Modular_sinais_<simbolo>_<completo|baseline>[_tag].csv`.
+**O que faz.** Nome:
 
-**Para análise.** Use em cada rodada comparável (`hold`, `baseline`, `rr25`).
-Vazio sobrescreve o arquivo anterior do mesmo modo.
+`ICS_Modular_{tipo}_{simbolo}_{completo|baseline}_{live|tester}_{YYYYMMDD}[_tag].csv`
+
+O ambiente e a data já separam a run live da run do Testador no mesmo dia.
+`InpRunTag` distingue uma segunda run no **mesmo** ambiente e data (ex.: dois
+testes no Testador no mesmo símbolo).
+
+**Para análise.** Sem tag, a segunda run tester do mesmo dia sobrescreve só os
+arquivos `*_tester_*` — o CSV live permanece. Ver [`COMPARATIVO.md`](COMPARATIVO.md).
+
+### `InpLogBars`
+
+- **Tipo / default:** `bool` = `true`
+- **Rótulo:** Gravar CSV de barras M1 (comparativo)
+- **Onde:** `Execution/Logger.mqh` (`LogBar`), `Runtime/BarProcessor.mqh`
+- **Motivo CSV:** —
+
+**O que faz.** Uma linha por M1 com `live = true` em `ICS_Modular_barras_*.csv`
+(OHLCV, delta, ticks, bid/ask, `proc_lag_s`, estado). Cabeçalho do arquivo
+sempre é escrito; `false` só omite as linhas.
+
+**Para análise.** É o arquivo que explica *por que* zona ou sinal divergiu entre
+live e Testador. Desligar reduz I/O; não muda sinais. Bid/ask de barra com
+`proc_lag_s` alto (catch-up) **não** é histórico — use só OHLCV/delta/ticks
+nesses minutos.
 
 ### `InpAlerts`
 

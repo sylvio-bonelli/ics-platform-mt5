@@ -5,6 +5,7 @@
 //| Depende de: Data/VolumeNormals.mqh, Data/VolumeProfile.mqh,      |
 //|             Data/BarBuilder.mqh (PushM5),                        |
 //|             Execution/VirtualTrades.mqh, Execution/RealOrders,   |
+//|             Execution/Logger.mqh (WriteFunnel),                  |
 //|             Analysis/Zone.mqh (RetireZone).                      |
 //|                                                                  |
 //| EndDay e o momento em que o perfil do dia vira "perfil anterior" |
@@ -73,6 +74,7 @@ void EndDay()
    CloseAllVirtual("FIM_DIA");
    if(g_state != ST_IDLE) RetireZone("fim do dia");
    CloseRealPosition("fim do dia");
+   if(!g_replay) WriteFunnel("dia");
 }
 
 //+------------------------------------------------------------------+

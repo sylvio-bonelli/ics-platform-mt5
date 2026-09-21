@@ -84,7 +84,7 @@ camada 7  Runtime/     orquestração
 
 | Arquivo | Responsabilidade | Funções públicas |
 |---|---|---|
-| `Logger.mqh` | abre os CSV, registra eventos do setup | `OpenFiles` `LogEvent` |
+| `Logger.mqh` | abre os CSV, registra eventos, barras, ordens e identidade da run | `OpenFiles` `LogEvent` `LogBar` `LogOrder` `WriteRun` `WriteFunnel` |
 | `VirtualTrades.mqh` | operações simuladas (executadas **e** rejeitadas) | `CloseVirtual` `CloseAllVirtual` `TrailStop` `ReversalExitSignal` `UpdateVirtualTrades` |
 | `RealOrders.mqh` | posição real no MetaTrader | `HasRealPosition` `HasOpenTrade` `SendOrder` `CloseRealPosition` `ManageRealPosition` |
 
@@ -215,14 +215,23 @@ operação virtual.
 ## 8. Saídas
 
 Pasta comum do MetaTrader (`Common\Files`), o que permite abrir no Excel com o
-teste ainda rodando:
+teste ainda rodando. O nome inclui **ambiente** (`live` / `tester`) e a **data**
+do pregão, para o Testador não apagar a run da conta real:
+
+`ICS_Modular_{tipo}_{símbolo}_{modo}_{ambiente}_{YYYYMMDD}[_tag].csv`
 
 | Arquivo | Conteúdo |
 |---|---|
-| `ICS_Modular_sinais_<símbolo>_<modo>.csv` | uma linha por gatilho, 37 colunas, do contexto ao resultado em R$ |
-| `ICS_Modular_eventos_<símbolo>_<modo>.csv` | trilha do setup: zonas, absorções, testes, armadilhas, rompimentos |
+| `sinais` | uma linha por gatilho (executado ou rejeitado), do contexto ao resultado em R$ |
+| `eventos` | trilha do setup: zonas, absorções, testes, armadilhas, rompimentos |
+| `barras` | uma linha por M1 live (OHLCV, delta, ticks, bid/ask, estado) |
+| `ordens` | tentativas reais: SEND / MODIFY / CLOSE / FAIL |
+| `run` | identidade da run (inicio/fim): conta, versão, snapshot dos `Inp*`, data_diag |
+| `funil` | uma linha por dia e uma no `OnDeinit` |
 
 `<modo>` é `completo` ou `baseline`, mais o `InpRunTag` se preenchido.
+Toda linha carrega `run_id` e `ambiente`. Join no Excel é pela **chave de
+negócio**, não pelo `id` sequencial. Protocolo: `docs/COMPARATIVO.md`.
 
 ---
 

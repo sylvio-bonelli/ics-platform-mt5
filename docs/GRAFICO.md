@@ -136,7 +136,7 @@ gráfico.
 `g_draw`. Some no `OnDeinit`.
 
 ```
-ICS Modular v0.19 [BASELINE]
+ICS Modular v1.200 [BASELINE]
 Estado: ...
 Contexto: alta | baixa | neutro
 Zona Z<id>: lo - hi

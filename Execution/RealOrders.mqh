@@ -3,7 +3,8 @@
 //| Envio e gestao da posicao real no MetaTrader.                    |
 //|                                                                  |
 //| Depende de: Core/Globals.mqh (g_trade), Core/Utils.mqh,          |
-//|             Execution/VirtualTrades.mqh (TrailStop).             |
+//|             Execution/VirtualTrades.mqh (TrailStop),             |
+//|             Execution/Logger.mqh (LogOrder).                     |
 //|                                                                  |
 //| TRAVA DE SEGURANCA: nada aqui e executado ao vivo sem            |
 //| InpLiveOrders = true (ver OrdersAllowed em Core/Utils.mqh).      |
@@ -39,33 +40,42 @@ bool HasOpenTrade()
 //+------------------------------------------------------------------+
 //| Envia a ordem a mercado com stop e alvo ja definidos             |
 //+------------------------------------------------------------------+
-bool SendOrder(int dir, double sl, double tp)
+bool SendOrder(int dir, double sl, double tp, int sigId)
 {
    double price = (dir > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   string cmt   = "ICS|" + IntegerToString(sigId);
    if(price <= 0)
    {
       PrintFormat("Ordem nao enviada: sem preco de %s (bid/ask = 0) em %s. No WIN_ICS, rode o arquivador v1.01 com 'Regravar' = true.",
                   dir > 0 ? "compra (ask)" : "venda (bid)", _Symbol);
+      LogOrder("FAIL", sigId, 0, 0, 0, 0, sl, tp);
       return false;
    }
    if(dir > 0 && (price <= sl || price >= tp))
    {
       PrintFormat("Ordem cancelada: preco %.0f ja fora do intervalo stop %.0f / alvo %.0f", price, sl, tp);
+      LogOrder("FAIL", sigId, 0, 0, price, 0, sl, tp);
       return false;
    }
    if(dir < 0 && (price >= sl || price <= tp))
    {
       PrintFormat("Ordem cancelada: preco %.0f ja fora do intervalo stop %.0f / alvo %.0f", price, sl, tp);
+      LogOrder("FAIL", sigId, 0, 0, price, 0, sl, tp);
       return false;
    }
-   bool ok = (dir > 0) ? g_trade.Buy(InpLots, _Symbol, 0, sl, tp, "ICS_Mod")
-                       : g_trade.Sell(InpLots, _Symbol, 0, sl, tp, "ICS_Mod");
-   uint rc = g_trade.ResultRetcode();
+   bool ok = (dir > 0) ? g_trade.Buy(InpLots, _Symbol, 0, sl, tp, cmt)
+                       : g_trade.Sell(InpLots, _Symbol, 0, sl, tp, cmt);
+   uint   rc     = g_trade.ResultRetcode();
+   ulong  ticket = g_trade.ResultOrder();
+   double fill   = g_trade.ResultPrice();
    if(!ok || (rc != TRADE_RETCODE_DONE && rc != TRADE_RETCODE_PLACED))
    {
       PrintFormat("Falha na ordem: %u %s", rc, g_trade.ResultRetcodeDescription());
+      LogOrder("FAIL", sigId, ticket, rc, price, fill, sl, tp);
       return false;
    }
+   LogOrder("SEND", sigId, ticket, rc, price, fill, sl, tp);
+   g_realSignalId = sigId;
    g_realRisk  = (price - sl) * dir;
    g_realBest  = price;
    g_realBE    = false;
@@ -82,10 +92,21 @@ void CloseRealPosition(string why)
    if(g_replay) return;
    if(!PositionSelect(_Symbol)) return;
    if(PositionGetInteger(POSITION_MAGIC) != InpMagic) return;
+   ulong  ticket = (ulong)PositionGetInteger(POSITION_TICKET);
+   double sl     = PositionGetDouble(POSITION_SL);
+   double tp     = PositionGetDouble(POSITION_TP);
+   double px     = PositionGetDouble(POSITION_PRICE_CURRENT);
    if(g_trade.PositionClose(_Symbol))
+   {
       PrintFormat("Posicao zerada: %s", why);
+      LogOrder("CLOSE", g_realSignalId, ticket, g_trade.ResultRetcode(),
+               px, g_trade.ResultPrice(), sl, tp);
+   }
    else
+   {
       PrintFormat("Falha ao zerar (%s): %u", why, g_trade.ResultRetcode());
+      LogOrder("FAIL", g_realSignalId, ticket, g_trade.ResultRetcode(), px, 0, sl, tp);
+   }
 }
 
 //+------------------------------------------------------------------+
@@ -144,8 +165,14 @@ void ManageRealPosition(const IcsBar &b)
       CloseRealPosition("trailing (preco ja alem do novo stop)");
       return;
    }
+   ulong ticket = (ulong)PositionGetInteger(POSITION_TICKET);
    if(!g_trade.PositionModify(_Symbol, newSL, curTP))
+   {
       PrintFormat("Falha ao mover stop para %.0f: %u", newSL, g_trade.ResultRetcode());
+      LogOrder("FAIL", g_realSignalId, ticket, g_trade.ResultRetcode(), 0, 0, newSL, curTP);
+      return;
+   }
+   LogOrder("MODIFY", g_realSignalId, ticket, g_trade.ResultRetcode(), 0, 0, newSL, curTP);
 }
 
 #endif // __ICSM_REALORDERS_MQH__

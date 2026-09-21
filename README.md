@@ -2,9 +2,10 @@
 
 Expert Advisor para MetaTrader 5, mini índice (WIN), gráfico M1.
 
-**v0.19** — reteste falho (`InpRejectEntry`): zona vazou sem fluxo, bounce
-não reconquistou, entrada no micro-extremo. População `RETESTE_FALHO` no CSV.
-A 0.18 era a entrada por aceitação (`InpHoldEntry`).
+**v1.200** — governança para comparar conta real × Testador: `run_id`, ambiente
+no nome dos CSV, barras M1, ordens reais e funil persistido. Protocolo em
+[`docs/COMPARATIVO.md`](docs/COMPARATIVO.md). A 0.19 era o reteste falho
+(`InpRejectEntry`).
 
 ---
 
@@ -57,8 +58,8 @@ trailing concorrente, zeragem cruzada, stop sobrescrito.
 separadas. O filtro `HasOpenTrade()` só enxerga as operações do próprio EA, então
 você acabaria com duas posições abertas simultâneas e risco dobrado sem perceber.
 
-O comentário da ordem também mudou (`"ICS"` → `"ICS_Mod"`), o que deixa as
-posições distinguíveis na aba Negociação do terminal.
+O comentário da ordem é `ICS|{id}` (id do sinal no CSV). Junto com o mágico,
+deixa a posição distinguível na aba Negociação e junta com `ordens.csv`.
 
 ---
 
@@ -122,8 +123,14 @@ ainda rodando.
 
 | Arquivo | Conteúdo |
 |---|---|
-| `ICS_Modular_sinais_<símbolo>_<modo>.csv` | uma linha por gatilho, 37 colunas |
-| `ICS_Modular_eventos_<símbolo>_<modo>.csv` | trilha do setup |
+| `ICS_Modular_sinais_*_{live\|tester}_{data}.csv` | uma linha por gatilho |
+| `ICS_Modular_eventos_*` | trilha do setup |
+| `ICS_Modular_barras_*` | uma linha por M1 live |
+| `ICS_Modular_ordens_*` | envio / modify / close / fail reais |
+| `ICS_Modular_run_*` | identidade da run + snapshot dos inputs |
+| `ICS_Modular_funil_*` | funil do dia (antes só no Diário) |
+
+Como cruzar live × Testador no Excel: [`docs/COMPARATIVO.md`](docs/COMPARATIVO.md).
 
 `InpCommaDecimal = true` grava com vírgula decimal (Excel pt-BR).
 
@@ -159,6 +166,7 @@ na marcação de área.
 | o que um objeto no gráfico significa | `docs/GRAFICO.md` |
 | um campo novo numa struct | `Config/Defines.mqh` |
 | colunas do CSV | `Execution/Logger.mqh` + `Analysis/Trigger.mqh` |
+| comparar real vs tester | `docs/COMPARATIVO.md` |
 
 ---
 

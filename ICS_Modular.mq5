@@ -27,7 +27,7 @@
 //| cima. Ao acrescentar um modulo, respeite a camada dele.          |
 //+------------------------------------------------------------------+
 #property copyright "ICS - Institutional Continuation Setup"
-#property version   "0.19"
+#property version   "1.200"
 #property description "Prova de conceito do ICS no WIN (M1)."
 #property description "Zona institucional -> rompimento com fluxo -> primeiro pullback fraco -> retomada."
 
@@ -142,7 +142,9 @@ int OnInit()
    g_trade.SetDeviationInPoints((ulong)(InpSlipPts * 2));
 
    //--- carga de historico com sinais desligados (g_replay)
+   InitRunContext();
    OpenFiles();
+   WriteRun("inicio");
    g_replay = true;
    LoadHistory();
    if(!g_isTester) ProcessPending(TimeCurrent());
@@ -150,8 +152,9 @@ int OnInit()
 
    if(!g_isTester && InpTradeEnabled && !InpLiveOrders)
       Print("ICS Modular ao vivo: ordens BLOQUEADAS (somente alertas). Para operar, ative 'AO VIVO: permitir ordens reais'.");
-   PrintFormat("ICS Modular v0.19 iniciado em %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
-               _Symbol, g_tick, g_pointValue, InpBaseline ? "BASELINE" : "COMPLETO", OrdersAllowed() ? "sim" : "nao");
+   PrintFormat("ICS Modular v%s iniciado em %s | run %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
+               ICSM_VERSION, _Symbol, g_runId, g_tick, g_pointValue,
+               InpBaseline ? "BASELINE" : "COMPLETO", OrdersAllowed() ? "sim" : "nao");
    return INIT_SUCCEEDED;
 }
 
@@ -174,10 +177,9 @@ void OnDeinit(const int reason)
 {
    CloseAllVirtual("FIM_TESTE");
    PrintSummary();
-   if(g_fSig != INVALID_HANDLE) FileClose(g_fSig);
-   if(g_fEvt != INVALID_HANDLE) FileClose(g_fEvt);
-   g_fSig = INVALID_HANDLE;
-   g_fEvt = INVALID_HANDLE;
+   WriteFunnel("fim");
+   WriteRun("fim");
+   CloseFiles();
    Comment("");
 }
 

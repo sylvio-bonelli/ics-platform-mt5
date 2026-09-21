@@ -27,6 +27,11 @@ void   CloseRealPosition(string why);
 
 //--- Execution/Logger.mqh
 void   LogEvent(string type, datetime t, double price, int dir, string info);
+void   LogBar(const IcsBar &b);
+void   LogOrder(string acao, int sinalId, ulong ticket, uint retcode,
+                double precoReq, double precoFill, double sl, double tp);
+void   WriteRun(string fase);
+void   WriteFunnel(string fase);
 
 //--- Core/Stats.mqh
 void   CountIn(string &names[], int &cnts[], string key);

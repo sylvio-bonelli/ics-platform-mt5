@@ -36,10 +36,15 @@ void FillFromRates(IcsBar &b, const MqlRates &r)
 bool LoadBarTicks(IcsBar &b)
 {
    ResetLastError();
+   g_barTicks     = 0;
+   g_barTicksFlag = 0;
+   g_barBid       = 0;
+   g_barAsk       = 0;
    int n = CopyTicksRange(_Symbol, g_ticks, COPY_TICKS_TRADE,
                           (ulong)((long)b.t * 1000), (ulong)(((long)b.t + 60) * 1000 - 1));
    g_dgBars++;
    if(n <= 0) return false;
+   g_barTicks = n;
    double vol = 0, buy = 0, sell = 0, pv = 0;
    for(int i = 0; i < n; i++)
    {
@@ -50,8 +55,14 @@ bool LoadBarTicks(IcsBar &b)
       bool fs = (g_ticks[i].flags & TICK_FLAG_SELL) != 0;
       g_dgTicks++;
       if(v <= 0) g_dgZeroVol++;
-      if(fb != fs) g_dgFlag++;
+      if(fb != fs)
+      {
+         g_dgFlag++;
+         g_barTicksFlag++;
+      }
       else if(!fb && !fs) g_dgNoFlag++;
+      if(g_ticks[i].bid > 0) g_barBid = g_ticks[i].bid;
+      if(g_ticks[i].ask > 0) g_barAsk = g_ticks[i].ask;
       if(p <= 0 || v <= 0) continue;
       int side = TickSide(g_ticks[i]);
       vol += v;

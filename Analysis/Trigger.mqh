@@ -172,11 +172,12 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    if(sc < InpMinScore)                        AddReason(why, "score baixo");
 
    //--- execucao ------------------------------------------------------
+   int    sigId  = g_signals + 1;
    bool   taken  = (why == "");
    string status = taken ? "EXECUTADO" : "REJEITADO";
    if(taken && OrdersAllowed() && !g_replay)
    {
-      if(!SendOrder(dir, stop, target))
+      if(!SendOrder(dir, stop, target, sigId))
       {
          taken  = false;
          status = "ERRO_ORDEM";
@@ -186,7 +187,7 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    else if(!taken && InpExecuteAll && g_isTester && !g_replay && mod < g_flat && !HasRealPosition())
    {
       // modo de estudo: executa tambem os rejeitados para medir o custo dos filtros
-      if(SendOrder(dir, stop, target)) status = "ESTUDO_EXECUTADO";
+      if(SendOrder(dir, stop, target, sigId)) status = "ESTUDO_EXECUTADO";
    }
    if(taken)
    {
@@ -200,13 +201,19 @@ void EvaluateTrigger(const IcsBar &b, int kind)
       }
    }
    else CountReasons(why);
-   g_signals++;
+   g_signals = sigId;
 
    //--- registro da operacao simulada ---------------------------------
    string ctxs   = (g_ctx > 0) ? "alta" : ((g_ctx < 0) ? "baixa" : "neutro");
    string setup  = isPb ? "PULLBACK" : (isHold ? "ACEITACAO" : (isRej ? "RETESTE_FALHO" : "ROMPIMENTO"));
    string evName = isPb ? "GATILHO" : (isHold ? "ACEITACAO" : (isRej ? "RETESTE_FALHO" : "ENTRADA_ROMPIMENTO"));
-   string info = IntegerToString(g_signals) + ";" + TimeToString(b.t, TIME_DATE) + ";" +
+   string chave  = SignalKey(b.t, setup, dir);
+   double bid    = (g_barBid > 0) ? g_barBid : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask    = (g_barAsk > 0) ? g_barAsk : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double spr    = (bid > 0 && ask > 0) ? (ask - bid) : 0;
+   double lag    = (double)((long)TimeCurrent() - ((long)b.t + 60));
+   string info = g_runId + ";" + g_env + ";" + ICSM_VERSION + ";" + chave + ";" +
+                 IntegerToString(g_signals) + ";" + TimeToString(b.t, TIME_DATE) + ";" +
                  TimeToString(b.t + 60, TIME_MINUTES) + ";" + (dir > 0 ? "COMPRA" : "VENDA") + ";" +
                  setup + ";" +
                  status + ";" + why + ";" + F(sc, 0) + ";" + ctxs + ";" +
@@ -217,7 +224,9 @@ void EvaluateTrigger(const IcsBar &b, int kind)
                  F(retrUsed * 100, 0) + ";" + F(pbVolRatio, 2) + ";" + F(pbContra, 2) + ";" +
                  F(trigVolRatio, 2) + ";" + F(trigDeltaPct, 0) + ";" +
                  F(entry, 0) + ";" + F(stop, 0) + ";" + F(target, 0) + ";" + tsrc + ";" +
-                 F(risk, 0) + ";" + F(reward, 0) + ";" + F(rr, 2);
+                 F(risk, 0) + ";" + F(reward, 0) + ";" + F(rr, 2) + ";" +
+                 F(bid, 0) + ";" + F(ask, 0) + ";" + F(spr, 0) + ";" +
+                 F(InpSlipPts, 0) + ";" + F(lag, 0);
 
    int k = ArraySize(g_vt);
    ArrayResize(g_vt, k + 1);

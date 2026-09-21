@@ -19,8 +19,8 @@ void UpdatePanel()
    string z   = (g_state != ST_IDLE) ? StringFormat("Zona Z%d: %.0f - %.0f", g_zone.id, g_zone.lo, g_zone.hi) : "";
    string pb  = (g_state == ST_IMPULSE) ?
                 StringFormat("Retracao: %.0f%% | pullback valido: %s", g_s.retr * 100, B(g_s.pbQualified)) : "";
-   Comment(StringFormat("ICS Modular v0.19 %s\nEstado: %s\nContexto: %s\n%s\n%s\nGatilhos: %d | executados: %d",
-                        InpBaseline ? "[BASELINE]" : "", st, ctx, z, pb, g_signals, g_tkN));
+   Comment(StringFormat("ICS Modular v%s %s\nEstado: %s\nContexto: %s\n%s\n%s\nGatilhos: %d | executados: %d",
+                        ICSM_VERSION, InpBaseline ? "[BASELINE]" : "", st, ctx, z, pb, g_signals, g_tkN));
 }
 
 #endif // __ICSM_PANEL_MQH__

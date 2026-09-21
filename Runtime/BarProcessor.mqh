@@ -78,6 +78,7 @@ void ProcessBar(IcsBar &b, bool live)
    RunStateMachine(b);
    if(closedM5 > 0) OnM5Close();
    if(g_draw) UpdatePanel();
+   LogBar(b);
 }
 
 //+------------------------------------------------------------------+
