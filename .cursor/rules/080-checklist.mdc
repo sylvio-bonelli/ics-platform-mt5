@@ -10,6 +10,9 @@ disciplina. Percorra antes de dizer que terminou.
 
 ## Sempre
 
+- [ ] Se a mudanca altera regra do projeto ou comportamento do EA,
+      `ICSM_VERSION` e `#property version` subiram juntos (regra 015) e o
+      `README.md` tem a linha da versao nova
 - [ ] Nenhum caractere acentuado em `.mq5` / `.mqh`
       `grep -rlP '[^\x00-\x7F]' --include='*.mqh' --include='*.mq5' .`
 - [ ] Indentacao de 3 espacos, chave em linha propria
@@ -37,6 +40,7 @@ disciplina. Percorra antes de dizer que terminou.
 - [ ] Default seguro
 - [ ] Validacao em `OnInit` se puder invalidar outro parametro
 - [ ] Se for filtro de volume/fluxo, respeita `InpBaseline`
+- [ ] Ficha nova em `docs/PARAMETROS.md` (default, onde, motivo CSV, nota)
 
 ## Se acrescentei um filtro de rejeicao
 
@@ -55,6 +59,7 @@ disciplina. Percorra antes de dizer que terminou.
 
 - [ ] Linha correspondente em `PrintFunnel()` — `Runtime/Summary.mqh`
 - [ ] Marcador grafico em `LogEvent()` se fizer sentido visualmente
+- [ ] `docs/GRAFICO.md` atualizado se o evento (ou a ausencia dele) for visivel
 
 ## Se mexi em saida de posicao
 
@@ -75,3 +80,5 @@ disciplina. Percorra antes de dizer que terminou.
       (zonas criadas > rompimentos > deslocamentos > gatilhos)
 - [ ] Comparei um backtest antes/depois se a mudanca afeta sinais
 - [ ] `ARCHITECTURE.md` e `README.md` refletem o estado atual
+- [ ] `docs/PARAMETROS.md` e `docs/GRAFICO.md` acompanham o codigo se a
+      mudanca tocou input, filtro, motivo CSV ou desenho

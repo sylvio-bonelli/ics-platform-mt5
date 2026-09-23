@@ -1,0 +1,27 @@
+---
+description: Subir ICSM_VERSION sempre que uma regra do projeto ou o comportamento do EA mudar
+alwaysApply: true
+---
+
+# Versao
+
+Toda mudanca de **regra do projeto** ou de **comportamento do EA** sobe a versao
+na mesma alteracao. Nao pergunte. Nao deixe para depois.
+
+Conta:
+
+- comportamento: sinal, filtro, zona, gatilho, saida, ordem, funil, coluna ou
+  motivo do CSV, default de input que altera resultado
+- regra: `.cursor/rules/` ou `AGENTS.md`
+
+Nao sobe versao: correcao de texto que nao muda o que o EA faz nem o que o
+agente deve fazer, analise de CSV, leitura de codigo.
+
+Os dois numeros ficam iguais:
+
+- `Config/Defines.mqh` — `ICSM_VERSION` (CSV, painel, run)
+- `ICS_Modular.mq5` — `#property version`
+
+Incremente o ultimo numero (`1.212` vira `1.213`). Na mesma mudanca, uma linha
+no topo do `README.md` diz o que a versao muda, e o exemplo de versao do painel
+em `docs/GRAFICO.md` acompanha o numero se ele estiver citado.

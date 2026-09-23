@@ -2,6 +2,12 @@
 
 Expert Advisor para MetaTrader 5, mini índice (WIN), gráfico M1.
 
+**v1.213** — regra de versão: mudança de regra do projeto ou de comportamento
+do EA sobe `ICSM_VERSION` na mesma alteração.
+
+**v1.212** — parcial do trilho em conta netting. Cada fatia sai como ordem
+oposta de `InpLots / 3` (compra de 3 vira três vendas de 1, e o inverso).
+
 **v1.211** — trilho de saída em três fatias (`InpTrilhoSaida`, default
 desligado). Branch `v1.211-trilho-saida`, fora do main até o teste.
 

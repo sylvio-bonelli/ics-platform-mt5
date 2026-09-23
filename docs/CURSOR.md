@@ -24,6 +24,8 @@ AGENTS.md                resumo operacional, lido por várias ferramentas
 .editorconfig            3 espaços, ANSI nos .mqh
 .gitignore
 docs/GLOSSARY.md         vocabulário completo, consulta sob demanda
+docs/PARAMETROS.md       ficha de cada input para análise de backtest
+docs/GRAFICO.md          legenda dos objetos no gráfico
 docs/CURSOR.md           este arquivo
 ```
 
@@ -41,9 +43,12 @@ Cada `.mdc` tem frontmatter que decide quando ela é carregada:
 | **Manual** | nada | só com `@nome-da-regra` |
 
 Aqui: `000` e `020` são sempre ativas — o contexto do projeto e a arquitetura
-valem para qualquer mudança. `010`, `030`, `040`, `050`, `060` entram sozinhas
-conforme o arquivo aberto. `070` e `080` são Agent Requested: o modelo as puxa
-pela descrição — `070` quando a conversa fala de absorção, POC ou delta, `080` ao
+valem para qualquer mudança. A `000` obriga consultar `docs/PARAMETROS.md` e
+`docs/GRAFICO.md` antes de decidir sobre parâmetro/filtro ou de interpretar
+backtest, funil, CSV ou gráfico, e exige que essas fichas saiam atualizadas
+na mesma mudança. `010`, `030`, `040`, `050`, `060` entram sozinhas conforme
+o arquivo aberto. `070` e `080` são Agent Requested: o modelo as puxa pela
+descrição — `070` quando a conversa fala de absorção, POC ou delta, `080` ao
 fechar uma alteração. Você também pode forçar as duas com `@070-dominio` e
 `@080-checklist`.
 
@@ -67,6 +72,13 @@ critérios da zona e que não pode usar STL.
 
 ```
 @GLOSSARY.md o que é padrão V e onde está no código?
+```
+
+**Analisar backtest ou decidir um filtro**
+
+```
+@PARAMETROS.md o filtro de volume do pullback esta caro?
+@GRAFICO.md o que e a seta cinza neste candle?
 ```
 
 **Refatorar um módulo grande**

@@ -33,8 +33,12 @@ Ao acrescentar um parametro:
 4. Valor default tem que ser seguro: o EA precisa rodar sem quebrar se o usuario
    nunca tocar nele
 5. Se o parametro puder invalidar outro, acrescente a validacao em `OnInit`
-   (`ICS_Modular.mq5`) retornando `INIT_PARAMETERS_INCORRECT` — ha dois exemplos la
+   (`ICS_Modular.mq5`) retornando `INIT_PARAMETERS_INCORRECT` — ha exemplos la
 6. Documente no `README.md` se for um parametro que muda o modo de operacao
+7. Atualize `docs/PARAMETROS.md` na mesma mudanca (default, onde, motivo CSV,
+   nota de analise). Sem a ficha a mudanca nao esta pronta. Consulte essa
+   doc — nao o comentario de fim de linha — ao decidir o que um `Inp*` faz
+   ou ao analisar o efeito de um filtro.
 
 **Parametro de tempo** entra como `string` no formato `"HH:MM"` e e convertido
 por `ParseHM()` em `OnInit`, guardado numa global `g_*` em minutos do dia.

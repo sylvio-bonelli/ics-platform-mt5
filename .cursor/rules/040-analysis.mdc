@@ -9,6 +9,11 @@ alwaysApply: false
 Esta e a camada que o desenvolvedor mais evolui. Mudancas aqui alteram
 diretamente os resultados do backtest.
 
+Antes de mudar um criterio ou de interpretar funil / CSV / backtest, leia
+`docs/PARAMETROS.md` (o parametro, o motivo de rejeicao e o efeito no funil)
+e `docs/GLOSSARY.md` (o termo). A ficha tem que sair atualizada na mesma
+mudanca — ver regra 000.
+
 ## Quem faz o que
 
 | Arquivo | Responsabilidade | Mexer quando |

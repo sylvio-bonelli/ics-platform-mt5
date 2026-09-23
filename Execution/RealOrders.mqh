@@ -14,6 +14,8 @@
 //| (mesma funcao TrailStop), para que o estudo e o real nao         |
 //| divirjam. Com o trilho ligado, o volume real segue as fatias    |
 //| que TrilhoBarra ja fechou na virtual do mesmo sinal.             |
+//| Em conta netting cada fatia e uma ordem oposta de InpLots/3.     |
+//| PositionClosePartial da biblioteca so envia em conta hedge.      |
 //+------------------------------------------------------------------+
 #ifndef __ICSM_REALORDERS_MQH__
 #define __ICSM_REALORDERS_MQH__
@@ -141,6 +143,9 @@ int VirtualPorSinal(int sigId)
 //+------------------------------------------------------------------+
 //| Fecha so uma fatia. O estudo ja decidiu o preco; aqui o fill e   |
 //| a mercado, na virada do minuto.                                   |
+//| Netting (B3): ordem oposta do volume da fatia, que reduz a       |
+//| posicao. Hedge: PositionClosePartial, que nessa biblioteca       |
+//| recusa conta netting antes de enviar.                             |
 //+------------------------------------------------------------------+
 bool CloseRealPartial(double volume, string why)
 {
@@ -155,15 +160,39 @@ bool CloseRealPartial(double volume, string why)
    double sl     = PositionGetDouble(POSITION_SL);
    double tp     = PositionGetDouble(POSITION_TP);
    double px     = PositionGetDouble(POSITION_PRICE_CURRENT);
-   if(!g_trade.PositionClosePartial(_Symbol, volume))
+   double posVol = PositionGetDouble(POSITION_VOLUME);
+   if(volume > posVol) volume = MathFloor(posVol / step + 1e-9) * step;
+   if(volume <= 0) return false;
+
+   bool hedge = (AccountInfoInteger(ACCOUNT_MARGIN_MODE) == ACCOUNT_MARGIN_MODE_RETAIL_HEDGING);
+   bool ok    = false;
+   string cmt = "ICS|" + IntegerToString(g_realSignalId);
+   if(hedge)
+      ok = g_trade.PositionClosePartial(_Symbol, volume);
+   else if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+      ok = g_trade.Sell(volume, _Symbol, SymbolInfoDouble(_Symbol, SYMBOL_BID), 0, 0, cmt);
+   else
+      ok = g_trade.Buy(volume, _Symbol, SymbolInfoDouble(_Symbol, SYMBOL_ASK), 0, 0, cmt);
+
+   uint   rc   = g_trade.ResultRetcode();
+   double fill = g_trade.ResultPrice();
+   if(!ok || (rc != TRADE_RETCODE_DONE && rc != TRADE_RETCODE_PLACED && rc != TRADE_RETCODE_DONE_PARTIAL))
    {
-      PrintFormat("Falha na parcial (%s): %u", why, g_trade.ResultRetcode());
-      LogOrder("FAIL", g_realSignalId, ticket, g_trade.ResultRetcode(), px, 0, sl, tp);
+      PrintFormat("Falha na parcial (%s): %u %s", why, rc, g_trade.ResultRetcodeDescription());
+      LogOrder("FAIL", g_realSignalId, ticket, rc, px, 0, sl, tp);
       return false;
    }
    PrintFormat("Parcial trilho: %s | vol %.0f", why, volume);
-   LogOrder("PARTIAL", g_realSignalId, ticket, g_trade.ResultRetcode(),
-            px, g_trade.ResultPrice(), sl, tp);
+   LogOrder("PARTIAL", g_realSignalId, ticket, rc, px, fill, sl, tp);
+
+   if(PositionSelect(_Symbol) && PositionGetInteger(POSITION_MAGIC) == InpMagic)
+   {
+      double nowSL = PositionGetDouble(POSITION_SL);
+      double nowTP = PositionGetDouble(POSITION_TP);
+      bool mudou = (MathAbs(nowSL - sl) > g_tick * 0.5) || (MathAbs(nowTP - tp) > g_tick * 0.5);
+      if(mudou && (sl > 0.0 || tp > 0.0) && !g_trade.PositionModify(_Symbol, sl, tp))
+         PrintFormat("Parcial executada, stop nao recolocado: %u", g_trade.ResultRetcode());
+   }
    return true;
 }
 
@@ -194,7 +223,16 @@ void EspelharTrilho(int k)
          CloseRealPosition(why);
          return;
       }
-      CloseRealPartial(vol - desejado, why);
+      double fatia = InpLots / 3.0;
+      for(int i = 0; i < 3; i++)
+      {
+         if(!PositionSelect(_Symbol)) return;
+         double agora = PositionGetDouble(POSITION_VOLUME);
+         if(agora <= desejado + step * 0.5) break;
+         double fechar = fatia;
+         if(fechar > agora - desejado) fechar = agora - desejado;
+         if(!CloseRealPartial(fechar, why)) break;
+      }
       if(!HasRealPosition()) return;
    }
    if(!g_vt[k].active || InpExitMode != ICS_EXIT_TRAIL) return;

@@ -73,6 +73,8 @@ com o teste rodando. Nao mude para a pasta local.
 
 `LogEvent(tipo, t, preco, dir, info)` faz tres coisas de uma vez: grava no CSV de
 eventos, incrementa o contador do funil e desenha o marcador no grafico.
+Legenda dos simbolos, cores e linhas: `docs/GRAFICO.md` — consulte ao ler o
+grafico ou ao mudar um marcador, e atualize o arquivo na mesma mudanca.
 
 Tipos existentes — **reutilize antes de inventar**, porque `PrintFunnel()` os le
 por nome literal:

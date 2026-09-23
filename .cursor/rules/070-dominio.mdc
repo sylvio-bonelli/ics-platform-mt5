@@ -1,5 +1,5 @@
 ---
-description: Vocabulario de analise de volume institucional e Market Profile aplicado ao WIN. Consulte ao interpretar ou nomear conceitos do setup (absorcao, zona, POC, delta, padrao V, spike, pullback, contexto).
+description: Vocabulario de analise de volume institucional e Market Profile aplicado ao WIN. Consulte ao interpretar ou nomear conceitos do setup (absorcao, zona, POC, delta, padrao V, spike, pullback, contexto) e ao analisar backtest — a analise tambem exige docs/PARAMETROS.md e docs/GRAFICO.md.
 alwaysApply: false
 ---
 
@@ -7,6 +7,10 @@ alwaysApply: false
 
 Vocabulario que o desenvolvedor usa. Nomeie funcoes e variaveis com estes termos,
 nao com traducoes do ingles.
+
+Ao analisar backtest, funil ou CSV, leia tambem `docs/PARAMETROS.md` (efeito
+de cada input) e `docs/GRAFICO.md` (o que o marcador no grafico significa).
+Nao interprete um filtro ou um objeto sem a ficha.
 
 ## Instrumento
 

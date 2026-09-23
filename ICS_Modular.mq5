@@ -27,7 +27,7 @@
 //| cima. Ao acrescentar um modulo, respeite a camada dele.          |
 //+------------------------------------------------------------------+
 #property copyright "ICS - Institutional Continuation Setup"
-#property version   "1.211"
+#property version   "1.213"
 #property description "Prova de conceito do ICS no WIN (M1)."
 #property description "Zona institucional -> rompimento com fluxo -> primeiro pullback fraco -> retomada."
 

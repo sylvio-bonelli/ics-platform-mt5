@@ -57,6 +57,12 @@ compilador MQL5 fora do MetaEditor.
 6. **`TrailStop()` é compartilhada** entre operações virtuais e posição real. Se
    mudar só um lado, o backtest deixa de descrever o EA.
 
+7. **Versão sobe na mesma mudança.** Regra do projeto (`.cursor/rules/`,
+   `AGENTS.md`) ou comportamento do EA: incremente `ICSM_VERSION` em
+   `Config/Defines.mqh` e `#property version` em `ICS_Modular.mq5` juntos.
+   Linha no `README.md`. Não pergunte e não deixe para depois. Detalhe em
+   `.cursor/rules/015-versao.mdc`.
+
 ---
 
 ## Onde mexer

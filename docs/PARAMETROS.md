@@ -1309,7 +1309,7 @@ Se `InpLots` não for múltiplo de 3, ou os pontos da primeira saída não forem
 
 **Para análise.** Recuo menor realiza a segunda fatia mais perto do pico. Recuo maior devolve mais. O alvo anda enquanto o extremo novo aparece antes do toque.
 
-No real, o parcial sai a mercado na virada do minuto. O estudo preenche no nível se a barra negociou lá. A diferença é a mesma classe de uma saída a mercado: o CSV do trilho é o estudo; `ordens` mostra o fill.
+No real, o parcial sai a mercado na virada do minuto, uma ordem por fatia (`InpLots / 3`). Em conta netting (XP/B3) essa ordem é o lado oposto: compra de 3 contratos vira três vendas de 1; venda de 3 vira três compras de 1. A posição restante segue com o mesmo stop. `PositionClosePartial` da biblioteca só envia em conta hedge e não é usada aqui. O estudo preenche no nível se a barra negociou lá. A diferença é a mesma classe de uma saída a mercado: o CSV do trilho é o estudo; `ordens` mostra o fill (`PARTIAL`, uma linha por fatia).
 
 ### `InpBEAtR`
 
