@@ -2,6 +2,9 @@
 
 Expert Advisor para MetaTrader 5, mini índice (WIN), gráfico M1.
 
+**v1.211** — trilho de saída em três fatias (`InpTrilhoSaida`, default
+desligado). Branch `v1.211-trilho-saida`, fora do main até o teste.
+
 **v1.210** — teto de prejuízo do dia em R$ (`InpMaxLossDayBRL`). Default `0`
 (desligado). Estourou: sem entrada nova e zera a posição real no tick.
 Preset ao vivo: `presets/ICS_Modular_v1210-live-winv26.set.example`.

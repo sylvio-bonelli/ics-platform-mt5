@@ -22,6 +22,9 @@
 //--- Execution/VirtualTrades.mqh
 void   CloseAllVirtual(string reason);
 
+//--- Execution/Trilho.mqh (incluido depois de VirtualTrades.mqh)
+bool   TrilhoBarra(int k, const IcsBar &b, double prevClose, bool temPrev);
+
 //--- Execution/RealOrders.mqh
 void   CloseRealPosition(string why);
 

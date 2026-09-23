@@ -23,13 +23,53 @@
 void CloseVirtual(int k, datetime t, double exitPrice, string reason)
 {
    if(!g_vt[k].active) return;
-   int    dir = g_vt[k].dir;
-   double pts = (exitPrice - g_vt[k].entry) * dir;
+   int    dir    = g_vt[k].dir;
+   double pts    = (exitPrice - g_vt[k].entry) * dir;
+   double preco  = exitPrice;
+   string motivo = reason;
+   string extra  = ";;;;;;;;;;";
+   if(g_vt[k].trilhoFase > 0)
+   {
+      long seq = 0;
+      int  n   = ArraySize(g_m1);
+      if(n > 0) seq = g_m1[n - 1].seq;
+      if(g_vt[k].trilhoSeq1 < 0)
+      {
+         g_vt[k].trilhoPx1  = exitPrice;
+         g_vt[k].trilhoWhy1 = reason;
+         g_vt[k].trilhoSeq1 = seq;
+      }
+      if(g_vt[k].trilhoSeq2 < 0)
+      {
+         g_vt[k].trilhoPx2  = exitPrice;
+         g_vt[k].trilhoWhy2 = reason;
+         g_vt[k].trilhoSeq2 = seq;
+      }
+      if(g_vt[k].trilhoSeq3 < 0)
+      {
+         g_vt[k].trilhoPx3  = exitPrice;
+         g_vt[k].trilhoWhy3 = reason;
+         g_vt[k].trilhoSeq3 = seq;
+      }
+      double p1 = (g_vt[k].trilhoPx1 - g_vt[k].entry) * dir;
+      double p2 = (g_vt[k].trilhoPx2 - g_vt[k].entry) * dir;
+      double p3 = (g_vt[k].trilhoPx3 - g_vt[k].entry) * dir;
+      pts   = (p1 + p2 + p3) / 3.0;
+      preco = g_vt[k].trilhoPx3;
+      if(g_vt[k].trilhoWhy1 == g_vt[k].trilhoWhy2 && g_vt[k].trilhoWhy2 == g_vt[k].trilhoWhy3)
+         motivo = g_vt[k].trilhoWhy3;
+      else
+         motivo = "TRILHO";
+      extra = ";" + F(g_vt[k].trilhoPico, 0) + ";" +
+              F(g_vt[k].trilhoPx1, 0) + ";" + F(p1, 0) + ";" + g_vt[k].trilhoWhy1 + ";" +
+              F(g_vt[k].trilhoPx2, 0) + ";" + F(p2, 0) + ";" + g_vt[k].trilhoWhy2 + ";" +
+              F(g_vt[k].trilhoPx3, 0) + ";" + F(p3, 0) + ";" + g_vt[k].trilhoWhy3;
+   }
    double r   = (g_vt[k].risk > 0) ? pts / g_vt[k].risk : 0;
    double brl = pts * g_pointValue * InpLots - InpCostPerContract * InpLots;
 
-   WriteLine(g_fSig, g_vt[k].info + ";" + TS(t) + ";" + F(exitPrice, 0) + ";" + reason + ";" +
-                     F(pts, 0) + ";" + F(r, 2) + ";" + F(g_vt[k].mae, 0) + ";" + F(g_vt[k].mfe, 0) + ";" + F(brl, 2));
+   WriteLine(g_fSig, g_vt[k].info + ";" + TS(t) + ";" + F(preco, 0) + ";" + motivo + ";" +
+                     F(pts, 0) + ";" + F(r, 2) + ";" + F(g_vt[k].mae, 0) + ";" + F(g_vt[k].mfe, 0) + ";" + F(brl, 2) + extra);
 
    int kd = g_vt[k].kind;
    if(kd < 0 || kd > 3) kd = 0;
@@ -126,6 +166,14 @@ bool ReversalExitSignal(int dir, long minSeq)
 //+------------------------------------------------------------------+
 void UpdateVirtualTrades(const IcsBar &b)
 {
+   double prevClose = 0;
+   bool   temPrev   = false;
+   int    nM1       = ArraySize(g_m1);
+   if(nM1 >= 2 && DayStart(g_m1[nM1 - 2].t) == DayStart(b.t))
+   {
+      prevClose = g_m1[nM1 - 2].c;
+      temPrev   = true;
+   }
    for(int k = 0; k < ArraySize(g_vt); k++)
    {
       if(!g_vt[k].active || b.seq <= g_vt[k].startSeq) continue;
@@ -135,6 +183,11 @@ void UpdateVirtualTrades(const IcsBar &b)
       double favor   = (dir > 0) ? b.h - g_vt[k].entry : g_vt[k].entry - b.l;
       if(adverse > g_vt[k].mae) g_vt[k].mae = adverse;
       if(favor   > g_vt[k].mfe) g_vt[k].mfe = favor;
+      if(g_vt[k].trilhoFase > 0)
+      {
+         TrilhoBarra(k, b, prevClose, temPrev);
+         continue;
+      }
 
       bool hitStop = (dir > 0) ? (b.l <= g_vt[k].stop)   : (b.h >= g_vt[k].stop);
       bool hitTgt  = (dir > 0) ? (b.h >= g_vt[k].target) : (b.l <= g_vt[k].target);

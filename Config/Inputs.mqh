@@ -104,6 +104,9 @@ input double InpSlipPts         = 5;         // Slippage estimado (pontos por ex
 input double InpCostPerContract = 0.50;      // Custo por contrato ida+volta (R$)
 input double InpMinStopATR      = 0.5;       // Stop minimo (x ATR M5, 0 = sem minimo)
 input ENUM_ICS_EXIT InpExitMode = ICS_EXIT_TRAIL; // Gestao da saida
+input bool   InpTrilhoSaida     = false;     // Trilho de saida (3 fatias iguais)
+input double InpTrilhoPts       = 110;       // Trilho: pontos da primeira saida
+input double InpTrilhoRecuo     = 0.5;       // Trilho: recuo do maximo ate a segunda saida
 input double InpBEAtR           = 1.0;       // Trailing: stop no zero-a-zero apos X R
 input double InpTrailStartR     = 1.5;       // Trailing: comecar a seguir apos X R
 input double InpTrailATR        = 1.0;       // Trailing: distancia (x ATR M5)

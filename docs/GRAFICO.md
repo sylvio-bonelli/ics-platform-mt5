@@ -118,12 +118,18 @@ mais (trail, zeragem). Nomes `ICSM_L<n>` (`OBJ_TREND` horizontal, sem raio).
 | entrada | branco (`clrWhite`) | pontilhado | `entrada` |
 | stop | vermelho (`clrRed`) | sólido | `stop` |
 | alvo | lima (`clrLime`) | sólido | `alvo: <fonte>` |
+| trilho 110 | dourado (`clrGold`) | tracejado | `trilho 110` |
+| trilho 50 | laranja (`clrOrange`) | tracejado | `trilho 50` |
 
 Níveis são os da **avaliação** (entrada com slippage, stop com buffer,
 alvo já no modo FIXED ou no TP de segurança do TRAIL). O stop que o
 `TrailStop` move **não** redesenha a linha — o gráfico congela o stop
 inicial. Para o stop efetivo, use a aba Negociação / o CSV
 (`saida_motivo` = `TRAILING` / `ZERO_A_ZERO`).
+
+`trilho 110` aparece quando a primeira fatia sai. `trilho 50` aparece
+quando o recuo é armado e de novo se o máximo anda. Só no gatilho tomado,
+e só com `InpTrilhoSaida`.
 
 Gatilho cinza: sem linhas. A virtual existe, mas não ganha régua no
 gráfico.
@@ -136,7 +142,7 @@ gráfico.
 `g_draw`. Some no `OnDeinit`.
 
 ```
-ICS Modular v1.210 [BASELINE]
+ICS Modular v1.211 [BASELINE]
 Estado: ...
 Contexto: alta | baixa | neutro
 Zona Z<id>: lo - hi

@@ -27,7 +27,7 @@
 //| cima. Ao acrescentar um modulo, respeite a camada dele.          |
 //+------------------------------------------------------------------+
 #property copyright "ICS - Institutional Continuation Setup"
-#property version   "1.210"
+#property version   "1.211"
 #property description "Prova de conceito do ICS no WIN (M1)."
 #property description "Zona institucional -> rompimento com fluxo -> primeiro pullback fraco -> retomada."
 
@@ -55,6 +55,7 @@
 
 //--- camada 5: execucao ---------------------------------------------
 #include "Execution/VirtualTrades.mqh"
+#include "Execution/Trilho.mqh"
 #include "Execution/RealOrders.mqh"
 
 //--- camada 6: analise ----------------------------------------------
@@ -161,6 +162,7 @@ int OnInit()
    if(InpMaxLossDayBRL > 0)
       PrintFormat("Limite de prejuizo do dia: R$ %.2f | equity atual R$ %.2f",
                   InpMaxLossDayBRL, g_dayStartEquity);
+   TrilhoAvisar();
    PrintFormat("ICS Modular v%s iniciado em %s | run %s | tick %.0f | R$ %.2f/ponto | modo %s | ordens %s",
                ICSM_VERSION, _Symbol, g_runId, g_tick, g_pointValue,
                InpBaseline ? "BASELINE" : "COMPLETO", OrdersAllowed() ? "sim" : "nao");

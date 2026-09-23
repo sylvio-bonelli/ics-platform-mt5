@@ -12,7 +12,8 @@
 //|                                                                  |
 //| A gestao da posicao real espelha a das operacoes virtuais        |
 //| (mesma funcao TrailStop), para que o estudo e o real nao         |
-//| divirjam.                                                        |
+//| divirjam. Com o trilho ligado, o volume real segue as fatias    |
+//| que TrilhoBarra ja fechou na virtual do mesmo sinal.             |
 //+------------------------------------------------------------------+
 #ifndef __ICSM_REALORDERS_MQH__
 #define __ICSM_REALORDERS_MQH__
@@ -127,6 +128,100 @@ void CloseRealPosition(string why)
 }
 
 //+------------------------------------------------------------------+
+//| A posicao real deste sinal, se houver                             |
+//+------------------------------------------------------------------+
+int VirtualPorSinal(int sigId)
+{
+   if(sigId <= 0) return -1;
+   for(int i = ArraySize(g_vt) - 1; i >= 0; i--)
+      if(g_vt[i].id == sigId) return i;
+   return -1;
+}
+
+//+------------------------------------------------------------------+
+//| Fecha so uma fatia. O estudo ja decidiu o preco; aqui o fill e   |
+//| a mercado, na virada do minuto.                                   |
+//+------------------------------------------------------------------+
+bool CloseRealPartial(double volume, string why)
+{
+   if(g_replay) return false;
+   if(!PositionSelect(_Symbol)) return false;
+   if(PositionGetInteger(POSITION_MAGIC) != InpMagic) return false;
+   double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   if(step <= 0) step = 1;
+   volume = MathFloor(volume / step + 1e-9) * step;
+   if(volume <= 0) return false;
+   ulong  ticket = (ulong)PositionGetInteger(POSITION_TICKET);
+   double sl     = PositionGetDouble(POSITION_SL);
+   double tp     = PositionGetDouble(POSITION_TP);
+   double px     = PositionGetDouble(POSITION_PRICE_CURRENT);
+   if(!g_trade.PositionClosePartial(_Symbol, volume))
+   {
+      PrintFormat("Falha na parcial (%s): %u", why, g_trade.ResultRetcode());
+      LogOrder("FAIL", g_realSignalId, ticket, g_trade.ResultRetcode(), px, 0, sl, tp);
+      return false;
+   }
+   PrintFormat("Parcial trilho: %s | vol %.0f", why, volume);
+   LogOrder("PARTIAL", g_realSignalId, ticket, g_trade.ResultRetcode(),
+            px, g_trade.ResultPrice(), sl, tp);
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| Iguala o volume real as fatias que o estudo ainda tem abertas    |
+//| e copia o stop que TrailStop ja calculou na virtual.             |
+//+------------------------------------------------------------------+
+void EspelharTrilho(int k)
+{
+   if(!PositionSelect(_Symbol)) return;
+   if(PositionGetInteger(POSITION_MAGIC) != InpMagic) return;
+   int fechadas = 0;
+   if(g_vt[k].trilhoSeq1 >= 0) fechadas++;
+   if(g_vt[k].trilhoSeq2 >= 0) fechadas++;
+   if(g_vt[k].trilhoSeq3 >= 0) fechadas++;
+   double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   if(step <= 0) step = 1;
+   double desejado = (3 - fechadas) * (InpLots / 3.0);
+   double vol      = PositionGetDouble(POSITION_VOLUME);
+   if(vol > desejado + step * 0.5)
+   {
+      string why = g_vt[k].trilhoWhy3;
+      if(why == "") why = g_vt[k].trilhoWhy2;
+      if(why == "") why = g_vt[k].trilhoWhy1;
+      if(why == "") why = "trilho";
+      if(desejado <= step * 0.5)
+      {
+         CloseRealPosition(why);
+         return;
+      }
+      CloseRealPartial(vol - desejado, why);
+      if(!HasRealPosition()) return;
+   }
+   if(!g_vt[k].active || InpExitMode != ICS_EXIT_TRAIL) return;
+   if(!PositionSelect(_Symbol)) return;
+   double curSL = PositionGetDouble(POSITION_SL);
+   double curTP = PositionGetDouble(POSITION_TP);
+   double newSL = g_vt[k].stop;
+   if(MathAbs(newSL - curSL) < g_tick / 2.0) return;
+   int    dir = g_vt[k].dir;
+   double px  = (dir > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                           : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(px > 0 && (px - newSL) * dir <= 0)
+   {
+      CloseRealPosition("trailing (preco ja alem do novo stop)");
+      return;
+   }
+   ulong ticket = (ulong)PositionGetInteger(POSITION_TICKET);
+   if(!g_trade.PositionModify(_Symbol, newSL, curTP))
+   {
+      PrintFormat("Falha ao mover stop para %.0f: %u", newSL, g_trade.ResultRetcode());
+      LogOrder("FAIL", g_realSignalId, ticket, g_trade.ResultRetcode(), 0, 0, newSL, curTP);
+      return;
+   }
+   LogOrder("MODIFY", g_realSignalId, ticket, g_trade.ResultRetcode(), 0, 0, newSL, curTP);
+}
+
+//+------------------------------------------------------------------+
 //| Gestao da posicao real a cada barra M1: zeragem, reversao,       |
 //| stop de tempo, breakeven e trailing                              |
 //+------------------------------------------------------------------+
@@ -134,6 +229,12 @@ void ManageRealPosition(const IcsBar &b)
 {
    if(!PositionSelect(_Symbol)) return;
    if(PositionGetInteger(POSITION_MAGIC) != InpMagic) return;
+   int kt = VirtualPorSinal(g_realSignalId);
+   if(kt >= 0 && g_vt[kt].trilhoFase > 0)
+   {
+      EspelharTrilho(kt);
+      return;
+   }
    int      dir  = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
    double   open = PositionGetDouble(POSITION_PRICE_OPEN);
    datetime pt   = (datetime)PositionGetInteger(POSITION_TIME);

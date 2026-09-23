@@ -1268,6 +1268,49 @@ Valores:
 fossem o mesmo sistema. MAE/MFE importam mais no trail (quanto o movimento
 deu vs. quanto o trail devolveu).
 
+### `InpTrilhoSaida`
+
+- **Tipo / default:** `bool` = `false`
+- **Rótulo:** Trilho de saida (3 fatias iguais)
+- **Onde:** `Execution/Trilho.mqh`; o real só espelha o volume em `RealOrders.mqh`
+- **Motivo CSV:** `TRILHO` quando as fatias saem em preços diferentes; senão o motivo único (`STOP`, `TRAILING`, `ALVO`, …). Fatias: `TRILHO_110`, `TRILHO_50`
+
+**O que faz.** Overlay. Não troca `InpExitMode`. Com `InpLots` inteiro e múltiplo de 3, cada operação (executada ou rejeitada) é acompanhada em três fatias de `InpLots / 3`.
+
+1. A primeira fatia sai quando o extremo da barra alcança a entrada ± `InpTrilhoPts`. Se a mesma barra toca o stop, vale o stop e não há parcial.
+2. O máximo é o extremo a favor a partir dessa saída. A queda confirma na primeira barra M1 seguinte que fecha contra o fechamento anterior. O pavio dessa barra entra no máximo. A segunda fatia sai no recuo `InpTrilhoRecuo` desse trecho. Se o preço fizer um extremo novo antes de atingir o recuo, o máximo e o alvo são recalculados.
+3. A terceira fatia continua em `TrailStop`, reversão, tempo, zeragem e alvo.
+
+`resultado_pts` e `resultado_R` são a média das três fatias. `resultado_brl` usa essa média sobre `InpLots`, então três saídas no mesmo preço reproduzem o cálculo antigo. Colunas `trilho_max`, `f1_*`, `f2_*`, `f3_*`.
+
+Se `InpLots` não for múltiplo de 3, ou os pontos da primeira saída não forem positivos, o trilho não liga e o Journal avisa. O default `false` deixa a saída atual intacta.
+
+**Para análise.** Compare a mesma amostra com o trilho desligado. A pergunta é se a média das três fatias paga mais do que a saída única, sem transformar em prejuízo o que o trailing segurou. MFE alto com `f3_pts` perto de zero e `f1`/`f2` positivos é o caso que motivou a regra. Não misture R de trilho ligado com R de trilho desligado.
+
+### `InpTrilhoPts`
+
+- **Tipo / default:** `double` = `110`
+- **Rótulo:** Trilho: pontos da primeira saida
+- **Onde:** `Execution/Trilho.mqh`
+- **Motivo CSV:** `TRILHO_110`
+
+**O que faz.** Distância fixa da entrada, nos dois lados. A fatia preenche nesse nível quando a barra negocia lá, não no fechamento.
+
+**Para análise.** 110 pontos é o exemplo de 21/09/2026 (188.700 → 188.810). Não é stop nem ATR.
+
+### `InpTrilhoRecuo`
+
+- **Tipo / default:** `double` = `0.5`
+- **Rótulo:** Trilho: recuo do maximo ate a segunda saida
+- **Onde:** `Execution/Trilho.mqh`
+- **Motivo CSV:** `TRILHO_50`
+
+**O que faz.** Fração do caminho entre a primeira saída e o máximo. `0.5` é o meio: `saída1 + recuo × (máximo − saída1)` na compra, espelhado na venda.
+
+**Para análise.** Recuo menor realiza a segunda fatia mais perto do pico. Recuo maior devolve mais. O alvo anda enquanto o extremo novo aparece antes do toque.
+
+No real, o parcial sai a mercado na virada do minuto. O estudo preenche no nível se a barra negociou lá. A diferença é a mesma classe de uma saída a mercado: o CSV do trilho é o estudo; `ordens` mostra o fill.
+
 ### `InpBEAtR`
 
 - **Tipo / default:** `double` = `1.0`

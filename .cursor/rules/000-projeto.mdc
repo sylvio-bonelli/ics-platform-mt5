@@ -43,14 +43,14 @@ Config/             Defines (structs/enums), Inputs (parametros)
 Core/               Globals, Prototypes, Utils, Stats
 Data/               VolumeNormals, VolumeProfile, Flow, BarBuilder
 UI/                 Draw, Panel
-Execution/          Logger, VirtualTrades, RealOrders
+Execution/          Logger, VirtualTrades, Trilho, RealOrders
 Analysis/           Zone, ZoneDetector, Absorption, Levels,
                     StateMachine, Reject, Trigger
 Runtime/            Session, BarProcessor, Summary
 ```
 
 `ARCHITECTURE.md` na raiz tem o mapa completo: responsabilidade de cada modulo,
-os 10 pontos de acoplamento cruzado, a ordem de execucao por barra e o diagrama da
+os 11 pontos de acoplamento cruzado, a ordem de execucao por barra e o diagrama da
 maquina de estados. **Leia-o antes de qualquer mudanca estrutural.**
 
 ## Documentacao de consulta (obrigatoria)

@@ -112,6 +112,9 @@ string InputsSnapshot()
    AddKV(s, "InpCostPerContract", F(InpCostPerContract, 2));
    AddKV(s, "InpMinStopATR",      F(InpMinStopATR, 2));
    AddKV(s, "InpExitMode",        IntegerToString((int)InpExitMode));
+   AddKV(s, "InpTrilhoSaida",     B(InpTrilhoSaida));
+   AddKV(s, "InpTrilhoPts",       F(InpTrilhoPts, 0));
+   AddKV(s, "InpTrilhoRecuo",     F(InpTrilhoRecuo, 2));
    AddKV(s, "InpBEAtR",           F(InpBEAtR, 2));
    AddKV(s, "InpTrailStartR",     F(InpTrailStartR, 2));
    AddKV(s, "InpTrailATR",        F(InpTrailATR, 2));
@@ -243,7 +246,8 @@ void OpenFiles()
    hdr += "retracao_pct;pullback_vol_ratio;pullback_delta_contra;gatilho_vol_x;gatilho_delta_pct;";
    hdr += "entrada;stop;alvo;fonte_alvo;risco_pts;retorno_pts;rr_liquido;";
    hdr += "bid;ask;spread;slip_modelo;proc_lag_s;";
-   hdr += "saida_hora;saida_preco;saida_motivo;resultado_pts;resultado_R;mae_pts;mfe_pts;resultado_brl";
+   hdr += "saida_hora;saida_preco;saida_motivo;resultado_pts;resultado_R;mae_pts;mfe_pts;resultado_brl;";
+   hdr += "trilho_max;f1_preco;f1_pts;f1_motivo;f2_preco;f2_pts;f2_motivo;f3_preco;f3_pts;f3_motivo";
    WriteLine(g_fSig, hdr);
    WriteLine(g_fEvt, "run_id;ambiente;zona_id;estado;chave;hora;evento;direcao;preco;detalhes");
    WriteLine(g_fBar, "run_id;ambiente;t;seq;o;h;l;c;vol;buy;sell;delta;vwap;dvwap;ticks;ticks_flag;normal_vol;bid;ask;spread;proc_lag_s;estado;zona_id;ctx");

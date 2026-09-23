@@ -25,7 +25,7 @@ camada 7   UI/Panel, Runtime/Session, BarProcessor, Summary
 `Analysis/`. Se uma mudanca exigir quebrar isso, o desenho esta errado — pare e
 discuta com o desenvolvedor antes de codificar.
 
-## Os 10 pontos de acoplamento cruzado
+## Os 11 pontos de acoplamento cruzado
 
 Sao as unicas chamadas que apontam "para frente" na ordem de include. Estao
 declaradas em `Core/Prototypes.mqh`:
@@ -37,6 +37,7 @@ StateMachine.mqh  ->  CancelRejectWatch()    Analysis/Reject.mqh
 Zone.mqh          ->  LogEvent()             Execution/Logger.mqh
 Zone.mqh          ->  DrawZone()             UI/Draw.mqh
 Zone.mqh          ->  CountIn()              Core/Stats.mqh
+VirtualTrades.mqh ->  TrilhoBarra()          Execution/Trilho.mqh
 Session.mqh       ->  CloseAllVirtual()      Execution/VirtualTrades.mqh
 Session.mqh       ->  CloseRealPosition()    Execution/RealOrders.mqh
 Session.mqh       ->  RetireZone()           Analysis/Zone.mqh

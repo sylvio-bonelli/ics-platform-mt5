@@ -247,6 +247,8 @@ void EvaluateTrigger(const IcsBar &b, int kind)
    g_vt[k].be       = false;
    g_vt[k].trail    = InpTrailATR * atr5;
    g_vt[k].info     = info;
+   g_vt[k].id       = sigId;
+   TrilhoZerar(k);
 
    //--- desenho -------------------------------------------------------
    string tip = StringFormat("%s %s %s | score %.0f | RR %.2f | %s", setup, dir > 0 ? "COMPRA" : "VENDA", status, sc, rr,

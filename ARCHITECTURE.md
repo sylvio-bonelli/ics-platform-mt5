@@ -8,7 +8,7 @@
 
 ## 1. Como o MQL5 compila este projeto
 
-MQL5 **não tem linker**. `#include` é inclusão textual do pré-processador: os 24
+MQL5 **não tem linker**. `#include` é inclusão textual do pré-processador: os 25
 arquivos viram **uma única unidade de compilação** e um único `.ex5`.
 
 Consequências que governam todo o desenho abaixo:
@@ -60,7 +60,7 @@ camada 7  Runtime/     orquestração
 | Arquivo | Responsabilidade |
 |---|---|
 | `Globals.mqh` | todo o estado compartilhado (prefixo `g_`) + `CTrade` |
-| `Prototypes.mqh` | declarações antecipadas dos 10 pontos de acoplamento cruzado |
+| `Prototypes.mqh` | declarações antecipadas dos 11 pontos de acoplamento cruzado |
 | `Utils.mqh` | `DayStart` `MinOfDay` `Clamp01` `RoundDn/Up` `TS` `B` `F` `ParseHM` `AddReason` `IdxOf` `WriteLine` `OrdersAllowed` `DayPnlBRL` `DailyLossBreached` `ATRArr` |
 | `Stats.mqh` | `CountIn` `CountOf` `CountReasons` — contadores nomeados |
 
@@ -86,6 +86,7 @@ camada 7  Runtime/     orquestração
 |---|---|---|
 | `Logger.mqh` | abre os CSV, registra eventos, barras, ordens e identidade da run | `OpenFiles` `LogEvent` `LogBar` `LogOrder` `WriteRun` `WriteFunnel` |
 | `VirtualTrades.mqh` | operações simuladas (executadas **e** rejeitadas) | `CloseVirtual` `CloseAllVirtual` `TrailStop` `ReversalExitSignal` `UpdateVirtualTrades` |
+| `Trilho.mqh` | saída em três fatias (110 pts, recuo, runner) | `TrilhoLigado` `TrilhoZerar` `TrilhoBarra` |
 | `RealOrders.mqh` | posição real no MetaTrader | `HasRealPosition` `HasOpenTrade` `SendOrder` `CloseRealPosition` `EnforceDailyLossLimit` `ManageRealPosition` |
 
 ### Analysis/ — camada 6 (o núcleo do setup)
@@ -110,7 +111,7 @@ camada 7  Runtime/     orquestração
 
 ---
 
-## 4. Os 10 pontos de acoplamento cruzado
+## 4. Os 11 pontos de acoplamento cruzado
 
 Declarados em `Core/Prototypes.mqh`. São as únicas chamadas que apontam "para
 frente" na ordem de include:
@@ -122,6 +123,7 @@ StateMachine.mqh  →  CancelRejectWatch()  (Analysis/Reject.mqh)
 Zone.mqh          →  LogEvent()           (Execution/Logger.mqh)
 Zone.mqh          →  DrawZone()           (UI/Draw.mqh)
 Zone.mqh          →  CountIn()            (Core/Stats.mqh)
+VirtualTrades.mqh →  TrilhoBarra()        (Execution/Trilho.mqh)
 Session.mqh       →  CloseAllVirtual()    (Execution/VirtualTrades.mqh)
 Session.mqh       →  CloseRealPosition()  (Execution/RealOrders.mqh)
 Session.mqh       →  RetireZone()         (Analysis/Zone.mqh)
@@ -213,6 +215,11 @@ médio parecido ou melhor que a de EXECUTADOS, o filtro está errado.
 Implementado em `Execution/VirtualTrades.mqh` + o registro em
 `Analysis/Trigger.mqh`, que **nunca aborta** — mesmo rejeitando, monta e grava a
 operação virtual.
+
+O trilho (`InpTrilhoSaida`) não abre outra linha: as três fatias fecham na
+mesma operação e `resultado_R` é a média. Rejeitados também percorrem as
+fatias. A posição real só reduz o volume para acompanhar o que o estudo
+já fechou.
 
 ---
 

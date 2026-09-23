@@ -71,6 +71,7 @@ compilador MQL5 fora do MetaEditor.
 | critérios de entrada, score, risco | `Analysis/Trigger.mqh` |
 | níveis candidatos a alvo | `Analysis/Levels.mqh` |
 | breakeven / trailing | `Execution/VirtualTrades.mqh` (`TrailStop`) |
+| trilho de saída (3 fatias) | `Execution/Trilho.mqh` |
 | saída por reversão | `Execution/VirtualTrades.mqh` (`ReversalExitSignal`) |
 | um parâmetro novo | `Config/Inputs.mqh` **e** `docs/PARAMETROS.md` |
 | o que um parâmetro faz / analisar filtro | `docs/PARAMETROS.md` (obrigatório) |

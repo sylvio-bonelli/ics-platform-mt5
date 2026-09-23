@@ -10,7 +10,7 @@
 
 //--- tamanho do vetor do Volume Profile do dia (niveis de preco)
 #define PROF_SIZE     1200
-#define ICSM_VERSION  "1.210"
+#define ICSM_VERSION  "1.211"
 
 //--- estados da maquina de estados (ver Analysis/StateMachine.mqh)
 #define ST_IDLE     0   // sem zona candidata
@@ -134,6 +134,12 @@ struct IcsVTrade
    bool     be;                              // ja moveu para zero-a-zero
    double   trail;
    string   info;                            // linha parcial do CSV de sinais
+   int      id;                              // id do sinal (liga a posicao real)
+   int      trilhoFase;                      // 0 off, 1 aguarda 110, 2 rastreia, 3 recuo armado, 4 so a 3a fatia
+   double   trilhoSaida1, trilhoPico, trilhoAlvo2;
+   double   trilhoPx1, trilhoPx2, trilhoPx3;
+   string   trilhoWhy1, trilhoWhy2, trilhoWhy3;
+   long     trilhoSeq1, trilhoSeq2, trilhoSeq3; // -1 = fatia ainda aberta
 };
 
 #endif // __ICSM_DEFINES_MQH__
